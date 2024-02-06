@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.topbar {
+  @apply fixed top-0 z-30 flex w-full items-center justify-between bg-slate-50 px-6 py-2 border-b;
+}
+
+.leftsidebar {
+  @apply sticky left-0 top-0 z-20 flex h-screen w-fit flex-col justify-between overflow-auto border-r bg-slate-50 pb-5 pt-28 max-md:hidden;
+}
+
+.leftsidebar_link {
+  @apply relative flex justify-start gap-4 rounded-lg p-4;
+}
