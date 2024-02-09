@@ -31,7 +31,48 @@ export const sidebarLinks = [
   },
   {
     imgURL: "/assets/vievista-logo.png",
-    route: "/my-social-page",
+    route: "/my-social-homepage",
     label: "Social Page",
   },
+];
+
+export const socialtopbarLinks = [
+  {
+    route: "/my-social-feed",
+    label: "Social Feed",
+  },
+  {
+    route: "/global-feed",
+    label: "Global Feed",
+  },
+  {
+    route: "/ask-the-community",
+    label: "Ask the Community",
+  },
+];
+
+export const daysOfTheWeek = [
+  "",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+export const notificationType = ["", "Medicine", "Food", "Water"];
+
+export const FrequencyUnit = [
+  "",
+  "Daily",
+  "Days",
+  "Weekly",
+  "Biweekly",
+  "Weeks",
+  "Monthly",
+  "Bimonthly",
+  "Months",
+  "Quarterly",
 ];

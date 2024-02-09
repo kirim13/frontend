@@ -22,15 +22,13 @@ export default function RootLayout({
   children: React.ReactNode; // types of props
 }) {
   return (
-    // return of layout
+    // return of layout <LeftSidebar />
     <ClerkProvider>
       <html lang="en">
         <body className={`${inter.className} bg-dark-1`}>
           <Topbar />
 
           <main>
-            <LeftSidebar />
-
             <section className="main-container">
               <div className="w-full max-w-4xl">{children}</div>
             </section>

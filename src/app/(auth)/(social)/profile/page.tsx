@@ -1,3 +1,4 @@
+import SocialTopBar from "../../../../components/social-page/Topbar";
 import type { NextPage } from "next";
 
 export const metadata = {
@@ -8,6 +9,7 @@ export const metadata = {
 const Profile: NextPage = () => {
   return (
     <div>
+      <SocialTopBar />
       <main>
         <h1>Profile Page</h1>
         <div>Username</div>
