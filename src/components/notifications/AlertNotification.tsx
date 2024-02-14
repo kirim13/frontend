@@ -1,24 +1,47 @@
+import { useEffect, useState } from "react";
+import { NotificationModalData } from "./AddNotification";
+
 function AlertNotification() {
-  async function getData() {
-    const setTime = "03:01";
-    try {
-      const response = await fetch(
-        "http://localhost:3001/notifications/clsfk0i7i0000taxq9vhhy0hk",
-        {
-          method: "GET",
+  const [notification, setNotification] =
+    useState<NotificationModalData | null>(null);
+
+  useEffect(() => {
+    fetch("http://localhost:3001/notifications/clsleqgkj0000j8o19oev9vos", {
+      method: "GET",
+    })
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          const error = data.message || res.statusText;
+          return Promise.reject(error);
         }
-      );
-      const user = await response.json();
-      console.log(user);
-      if (setTime === user.time) {
-        console.log("ALERT");
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  }
-  getData();
-  return <div>Alert Notifications</div>;
+        console.log(data);
+        setNotification(data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []); // empty array means the effect will run once
+
+  return (
+    <div>
+      <fieldset className="notification-fieldset">
+        <legend className="notification-legend">{notification?.type}</legend>
+        <div className="flex flex-row">
+          <div className="notification-label">
+            <p>{notification?.name}</p>
+            <p>{`${notification?.quantity} ${notification?.unit}`}</p>
+          </div>
+        </div>
+        <div className="notification-time">
+          <p>{`${notification?.frequency_quantity} ${notification?.frequency_unit}`}</p>
+          <p>{`${notification?.dosage_quantity} ${notification?.dosage_unit}`}</p>
+          <p>{notification?.time}</p>
+        </div>
+      </fieldset>
+    </div>
+  );
 }
 
 export default AlertNotification;

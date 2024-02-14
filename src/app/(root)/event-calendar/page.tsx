@@ -5,6 +5,7 @@ import Button from "@/components/shared/Button";
 import AddNotification, {
   NotificationModalData,
 } from "@/components/notifications/AddNotification";
+import AlertNotification from "@/components/notifications/AlertNotification";
 
 export default function EventCalendar() {
   const [isNotificationModalOpen, setNotificationModalOpen] =
@@ -37,6 +38,7 @@ export default function EventCalendar() {
           onSubmit={handleFormSubmit}
         />
       </div>
+      <AlertNotification />
     </div>
   );
 }

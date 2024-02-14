@@ -24,6 +24,23 @@
   .modal-close-btn {
     @apply absolute top-0 right-0 px-4 py-2;
   }
+  /* Notification */
+  .notification-fieldset {
+    @apply absolute right-2 w-1/2 border p-2;
+  }
+
+  .notification-legend {
+    @apply text-[20px] px-4;
+  }
+
+  .notification-label {
+    @apply flex flex-row justify-between px-4 w-1/2;
+  }
+
+  .notification-time {
+    @apply flex flex-row justify-between px-4 w-full;
+  }
+
   /* Social */
   .post {
     @apply flex flex-col justify-between gap-4 px-6 py-20;
