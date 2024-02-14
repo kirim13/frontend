@@ -6,6 +6,7 @@ import Topbar from "@/components/shared/Topbar";
 import LeftSidebar from "@/components/shared/LeftSidebar";
 import RightSidebar from "@/components/shared/RightSidebar";
 import Bottombar from "@/components/shared/Bottombar";
+import AlertNotification from "@/components/notifications/AlertNotification";
 
 export const metadata = {
   title: "VieVista",
@@ -27,12 +28,10 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${inter.className} bg-dark-1`}>
           <Topbar />
-
           <main>
             <section className="main-container">
               <div className="w-full max-w-4xl">{children}</div>
             </section>
-
             <RightSidebar />
           </main>
 

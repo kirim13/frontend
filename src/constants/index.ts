@@ -60,9 +60,9 @@ export const daysOfTheWeek = [
   "Friday",
   "Saturday",
   "Sunday",
-];
+] as const;
 
-export const notificationType = ["", "Medicine", "Food", "Water"];
+export const notificationType = ["", "Medicine", "Food", "Water"] as const;
 
 export const FrequencyUnit = [
   "",
@@ -75,4 +75,13 @@ export const FrequencyUnit = [
   "Bimonthly",
   "Months",
   "Quarterly",
-];
+] as const;
+
+export const RepeatingType = [
+  "",
+  "Daily",
+  "Weekly",
+  "Biweekly",
+  "Monthly",
+  "Quarterly",
+] as const;
