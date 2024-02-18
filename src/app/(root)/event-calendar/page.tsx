@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/shared/Button";
 import AddNotification, {
   NotificationModalData,
@@ -13,6 +13,8 @@ export default function EventCalendar() {
   const [notificationData, setNotificationData] =
     useState<NotificationModalData | null>(null);
 
+  const [date, setDate] = useState(new Date());
+
   const handleNotificationModalOpen = () => {
     setNotificationModalOpen(true);
   };
@@ -23,20 +25,26 @@ export default function EventCalendar() {
     setNotificationData(data);
     handleCloseNotificationModal();
   };
+
+  useEffect(() => {
+    setDate(new Date());
+  }, []);
+
   return (
     <div>
-      <div className="flex justify-between">
+      <div className="flex flex-row justify-between border px-2">
         <h2 className="heading2">EVENT CALENDAR</h2>
+        <p>{date.toLocaleDateString()}</p>
         <Button>
           <button onClick={handleNotificationModalOpen} className="border p-2">
             Add Notification
           </button>
+          <AddNotification
+            isOpen={isNotificationModalOpen}
+            onClose={handleCloseNotificationModal}
+            onSubmit={handleFormSubmit}
+          />
         </Button>
-        <AddNotification
-          isOpen={isNotificationModalOpen}
-          onClose={handleCloseNotificationModal}
-          onSubmit={handleFormSubmit}
-        />
       </div>
       <AlertNotification />
     </div>

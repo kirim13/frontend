@@ -13,6 +13,7 @@ import Modal from "../shared/modal";
 import Button from "../shared/Button";
 
 const ModalNotificationSchema = z.object({
+  id: z.string().optional(),
   name: z.string(),
   type: z.string(),
   quantity: z.number().nonnegative(),
@@ -28,16 +29,20 @@ const ModalNotificationSchema = z.object({
   notes: z.string().optional(),
   files: z.string().optional(),
   imageSrc: z.string(),
+  userId: z.string().optional(),
+  petId: z.string(),
+  completed: z.boolean().optional(),
 });
 
 export type NotificationModalData = z.infer<typeof ModalNotificationSchema>;
+
 type NotificationModalProps = {
   isOpen: boolean;
   onSubmit: (data: NotificationModalData) => void;
   onClose: () => void;
 };
 
-const initialNotificationModalData: NotificationModalData = {
+export const initialNotificationModalData: NotificationModalData = {
   name: "",
   type: "",
   quantity: 0,
@@ -53,6 +58,8 @@ const initialNotificationModalData: NotificationModalData = {
   notes: "",
   files: "",
   imageSrc: "",
+  userId: "clspfh9em00004ju0nwklyklg",
+  petId: "clspggxx80000xwjdlinq5by6",
 };
 
 const AddNotification: React.FC<NotificationModalProps> = ({
@@ -468,7 +475,11 @@ const AddNotification: React.FC<NotificationModalProps> = ({
               >
                 Previous
               </button>
-              <button type="submit" className="w-full py-2 border">
+              <button
+                type="submit"
+                className="w-full py-2 border"
+                onClick={handleSubmitClick}
+              >
                 Submit
               </button>
             </Button>
