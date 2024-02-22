@@ -18,10 +18,10 @@ const ModalNotificationSchema = z.object({
   type: z.string(),
   quantity: z.number().nonnegative(),
   unit: z.string(),
-  dosage_quantity: z.number().nonnegative(),
-  dosage_unit: z.string(),
-  frequency_quantity: z.number().nonnegative(),
-  frequency_unit: z.string(),
+  dosageQuantity: z.number().nonnegative(),
+  dosageUnit: z.string(),
+  frequencyQuantity: z.number().nonnegative(),
+  frequencyUnit: z.string(),
   dayOfTheWeek: z.string().optional(),
   time: z.string(),
   end_date: z.string().optional(),
@@ -47,10 +47,10 @@ export const initialNotificationModalData: NotificationModalData = {
   type: "",
   quantity: 0,
   unit: "",
-  dosage_quantity: 0,
-  dosage_unit: "",
-  frequency_quantity: 0,
-  frequency_unit: "",
+  dosageQuantity: 0,
+  dosageUnit: "",
+  frequencyQuantity: 0,
+  frequencyUnit: "",
   dayOfTheWeek: "",
   time: "",
   end_date: "",
@@ -247,11 +247,11 @@ const AddNotification: React.FC<NotificationModalProps> = ({
                   name="dosage_quantity"
                   className="border"
                   min={0}
-                  defaultValue={notification.dosage_quantity}
+                  defaultValue={notification.dosageQuantity}
                   onChange={(e) =>
                     setNotification({
                       ...notification,
-                      dosage_quantity: Number(e.target.value),
+                      dosageQuantity: Number(e.target.value),
                     })
                   }
                 ></input>
@@ -263,11 +263,11 @@ const AddNotification: React.FC<NotificationModalProps> = ({
                   id="dosage_unit"
                   name="dosage_unit"
                   className="border"
-                  defaultValue={notification.dosage_unit}
+                  defaultValue={notification.dosageUnit}
                   onChange={(e) =>
                     setNotification({
                       ...notification,
-                      dosage_unit: e.target.value,
+                      dosageUnit: e.target.value,
                     })
                   }
                 ></input>
@@ -282,11 +282,11 @@ const AddNotification: React.FC<NotificationModalProps> = ({
                   name="frequency_quantity"
                   className="border"
                   min={0}
-                  defaultValue={notification.frequency_quantity}
+                  defaultValue={notification.frequencyQuantity}
                   onChange={(e) =>
                     setNotification({
                       ...notification,
-                      frequency_quantity: Number(e.target.value),
+                      frequencyQuantity: Number(e.target.value),
                     })
                   }
                 ></input>
@@ -296,11 +296,11 @@ const AddNotification: React.FC<NotificationModalProps> = ({
                 <select
                   id="frequency_unit"
                   className="border"
-                  defaultValue={notification.frequency_unit}
+                  defaultValue={notification.frequencyUnit}
                   onChange={(e) =>
                     setNotification({
                       ...notification,
-                      frequency_unit: e.target.value,
+                      frequencyUnit: e.target.value,
                     })
                   }
                 >

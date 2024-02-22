@@ -28,9 +28,10 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${inter.className} bg-dark-1`}>
           <Topbar />
+
           <main>
             <section className="main-container">
-              <div className="w-full max-w-4xl">{children}</div>
+              <div className="w-full h-100">{children}</div>
             </section>
             <RightSidebar />
           </main>
