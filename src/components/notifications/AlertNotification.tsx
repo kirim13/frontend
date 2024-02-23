@@ -1,9 +1,26 @@
 import { useEffect, useState } from "react";
 import { NotificationModalData } from "./AddNotification";
+import Button from "@/components/shared/Button";
+import AddNotification from "@/components/notifications/AddNotification";
 
 function AlertNotification() {
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
   const [date, setDate] = useState(new Date());
+  const [isNotificationModalOpen, setNotificationModalOpen] =
+    useState<boolean>(false);
+  const [notificationData, setNotificationData] =
+    useState<NotificationModalData | null>(null);
+
+  const handleNotificationModalOpen = () => {
+    setNotificationModalOpen(true);
+  };
+  const handleCloseNotificationModal = () => {
+    setNotificationModalOpen(false);
+  };
+  const handleFormSubmit = (data: NotificationModalData): void => {
+    setNotificationData(data);
+    handleCloseNotificationModal();
+  };
 
   useEffect(() => {
     setDate(new Date());
@@ -43,6 +60,7 @@ function AlertNotification() {
         notification[i].completed = false;
       }
     }
+    setNotification([...notification]);
   };
 
   return (
@@ -52,6 +70,21 @@ function AlertNotification() {
         <div className="flex flex-row border items-center">
           <div className="title">Notifications</div>
           <p>{date.toLocaleDateString()}</p>
+          <div className="flex w-full px-2 justify-end">
+            <Button>
+              <button
+                onClick={handleNotificationModalOpen}
+                className="border p-2"
+              >
+                Add Notification
+              </button>
+              <AddNotification
+                isOpen={isNotificationModalOpen}
+                onClose={handleCloseNotificationModal}
+                onSubmit={handleFormSubmit}
+              />
+            </Button>
+          </div>
         </div>
 
         {notification.map((notif: NotificationModalData, i: number) => (
@@ -63,13 +96,14 @@ function AlertNotification() {
                 </legend>
 
                 <div className="flex flex-row border">
-                  <div className="flex flex-col border">
+                  <div className="border px-2 bg-blue-100"></div>
+                  <div className="flex flex-col border w-5/6">
                     <div className="notification-label">
                       {`${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`}
                     </div>
                     <div className="notification-time">{notif.time}</div>
                   </div>
-                  <div className="flex justify-end px-2 items-center">
+                  <div className="flex items-center w-1/6 justify-center">
                     <label htmlFor={`${notif.id} checkbox`}>
                       <input
                         type="checkbox"
@@ -97,19 +131,24 @@ function AlertNotification() {
                 </legend>
 
                 <div className="flex flex-row border">
-                  <div className="flex flex-col border">
+                  <div className="border px-2 bg-blue-100"></div>
+                  <div className="flex flex-col border w-5/6">
                     <div className="notification-label">
                       {`${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`}
                     </div>
                     <div className="notification-time">{notif.time}</div>
                   </div>
-                  <div className="flex justify-end px-2 items-center">
-                    <label htmlFor={`${notif.id} checkbox`}>
+                  <div className="flex items-center w-1/6 justify-center">
+                    <label
+                      htmlFor={`${notif.id} checkbox`}
+                      className="flex justify-end border"
+                    >
                       <input
                         type="checkbox"
                         id={`${notif.id} checkbox`}
                         name={`${notif.id} checkbox`}
                         onClick={() => handleCheckbox(i)}
+                        checked={notification[i].completed}
                       />
                     </label>
                   </div>
