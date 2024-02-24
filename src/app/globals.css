@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+.notification-legend-Medicine {
+  @apply text-[20px] px-4 font-semibold;
+}
+
+.notification-label-Medicine {
+  @apply border px-2 bg-blue-100;
+}
+
 @layer components {
   /* Main */
   .main-container {
@@ -9,7 +17,7 @@
   }
 
   .title {
-    @apply px-4 text-[24px] py-2;
+    @apply px-4 text-[24px] py-3;
   }
 
   .heading2 {
@@ -31,10 +39,6 @@
   /* Notification */
   .notification-fieldset {
     @apply right-2 border p-2;
-  }
-
-  .notification-legend-Medicine {
-    @apply text-[20px] px-4 font-semibold text-red-500;
   }
 
   .notification-label {

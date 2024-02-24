@@ -1,10 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Button from "@/components/shared/Button";
-import AddNotification, {
-  NotificationModalData,
-} from "@/components/notifications/AddNotification";
 import AlertNotification from "@/components/notifications/AlertNotification";
 
 export default function EventCalendar() {

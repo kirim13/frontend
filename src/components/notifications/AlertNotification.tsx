@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NotificationModalData } from "./AddNotification";
 import Button from "@/components/shared/Button";
 import AddNotification from "@/components/notifications/AddNotification";
+import Calendar from "@/components/notifications/Calendar";
 
 function AlertNotification() {
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
@@ -34,15 +35,13 @@ function AlertNotification() {
       }
     )
       .then(async (res) => {
-        const data = await res.json();
+        const data: NotificationModalData[] = await res.json();
 
         if (!res.ok) {
-          const error = data.message || res.statusText;
+          const error = res.statusText;
           return Promise.reject(error);
         }
-        for (let i = 0; i < data.length; i++) {
-          setNotification((notification) => [...notification, data[i]]);
-        }
+        setNotification(data);
       })
       .catch((err) => {
         console.error(err);
@@ -65,8 +64,11 @@ function AlertNotification() {
 
   return (
     <div className="flex flex-row border">
-      <div className="title w-full border h-full">Calendar</div>
-      <div className="w-full h-1/2">
+      <div className="w-full">
+        <Calendar />
+      </div>
+
+      <div className="w-full">
         <div className="flex flex-row border items-center">
           <div className="title">Notifications</div>
           <p>{date.toLocaleDateString()}</p>
@@ -88,7 +90,7 @@ function AlertNotification() {
         </div>
 
         {notification.map((notif: NotificationModalData, i: number) => (
-          <div key={i}>
+          <div key={`${i} ${notif.id}`} className="px-2 border">
             {notif && notif.completed === false && (
               <fieldset className="notification-fieldset w-1/2">
                 <legend className={`notification-legend-${notif.type}`}>
@@ -96,7 +98,7 @@ function AlertNotification() {
                 </legend>
 
                 <div className="flex flex-row border">
-                  <div className="border px-2 bg-blue-100"></div>
+                  <div className={`notification-label-${notif.type}`}></div>
                   <div className="flex flex-col border w-5/6">
                     <div className="notification-label">
                       {`${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`}
@@ -110,6 +112,7 @@ function AlertNotification() {
                         id={`${notif.id} checkbox`}
                         name={`${notif.id} checkbox`}
                         onClick={() => handleCheckbox(i)}
+                        defaultChecked={notif.completed}
                       />
                     </label>
                   </div>
@@ -123,7 +126,7 @@ function AlertNotification() {
           <div className="title">Completed Notifications</div>
         </div>
         {notification.map((notif: NotificationModalData, i: number) => (
-          <div key={i}>
+          <div key={`${i} ${notif.id}`}>
             {notif && notif.completed === true && (
               <fieldset className="notification-fieldset w-1/2">
                 <legend className={`notification-legend-${notif.type}`}>
@@ -148,7 +151,7 @@ function AlertNotification() {
                         id={`${notif.id} checkbox`}
                         name={`${notif.id} checkbox`}
                         onClick={() => handleCheckbox(i)}
-                        checked={notification[i].completed}
+                        defaultChecked={notification[i].completed}
                       />
                     </label>
                   </div>
