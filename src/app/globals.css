@@ -7,7 +7,15 @@
 }
 
 .notification-label-Medicine {
-  @apply border px-2 bg-blue-100;
+  @apply border px-2 bg-orange-300;
+}
+
+.notification-legend-Food {
+  @apply text-[20px] px-4 font-semibold;
+}
+
+.notification-label-Food {
+  @apply border px-2 bg-violet-300;
 }
 
 @layer components {
@@ -25,7 +33,7 @@
   }
 
   .section {
-    @apply flex flex-col gap-4;
+    @apply flex flex-col gap-4 h-full;
   }
 
   /* Modal */
@@ -39,10 +47,6 @@
   /* Notification */
   .notification-fieldset {
     @apply right-2 border p-2;
-  }
-
-  .notification-label {
-    @apply px-4;
   }
 
   .notification-time {

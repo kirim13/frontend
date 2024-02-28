@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 import { NotificationModalData } from "./AddNotification";
 import Button from "@/components/shared/Button";
 import AddNotification from "@/components/notifications/AddNotification";
-import Calendar from "@/components/notifications/Calendar";
 
-function AlertNotification() {
+interface AlertNotificationProps {
+  currentDaySelected: Date;
+}
+
+const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
   const [date, setDate] = useState(new Date());
   const [isNotificationModalOpen, setNotificationModalOpen] =
@@ -24,8 +27,8 @@ function AlertNotification() {
   };
 
   useEffect(() => {
-    setDate(new Date());
-  }, []);
+    setDate(props.currentDaySelected);
+  }, [props.currentDaySelected]);
 
   useEffect(() => {
     fetch(
@@ -63,13 +66,9 @@ function AlertNotification() {
   };
 
   return (
-    <div className="flex flex-row border">
-      <div className="w-full">
-        <Calendar />
-      </div>
-
-      <div className="w-full">
-        <div className="flex flex-row border items-center">
+    <div className="w-full h-full border">
+      <div className="flex flex-col">
+        <div className="flex border flex-row items-center">
           <div className="title">Notifications</div>
           <p>{date.toLocaleDateString()}</p>
           <div className="flex w-full px-2 justify-end">
@@ -90,39 +89,46 @@ function AlertNotification() {
         </div>
 
         {notification.map((notif: NotificationModalData, i: number) => (
-          <div key={`${i} ${notif.id}`} className="px-2 border">
-            {notif && notif.completed === false && (
-              <fieldset className="notification-fieldset w-1/2">
-                <legend className={`notification-legend-${notif.type}`}>
-                  {notif.type}
-                </legend>
+          <div key={`${i} ${notif.id}`} className="px-2 h-full">
+            {notif &&
+              notif.createdAt?.toString().slice(0, 10) ===
+                date.toISOString().slice(0, 10) &&
+              notif.completed === false && (
+                <fieldset className="notification-fieldset w-1/2">
+                  <legend className={`notification-legend-${notif.type}`}>
+                    {notif.type}
+                  </legend>
 
-                <div className="flex flex-row border">
-                  <div className={`notification-label-${notif.type}`}></div>
-                  <div className="flex flex-col border w-5/6">
-                    <div className="notification-label">
-                      {`${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`}
+                  <div className="flex flex-row border">
+                    <div className={`notification-label-${notif.type}`}></div>
+                    <div className="flex flex-col border w-5/6">
+                      <div className="px-4">
+                        {`${
+                          notif.type === "Medicine"
+                            ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
+                            : `${notif.quantity} ${notif.unit} of ${notif.name}`
+                        }`}
+                      </div>
+                      <div className="notification-time">{notif.time}</div>
                     </div>
-                    <div className="notification-time">{notif.time}</div>
+                    <div className="flex items-center w-1/6 justify-center">
+                      <label htmlFor={`${notif.id} checkbox`}>
+                        <input
+                          type="checkbox"
+                          id={`${notif.id} checkbox`}
+                          name={`${notif.id} checkbox`}
+                          onClick={() => handleCheckbox(i)}
+                          defaultChecked={notif.completed}
+                        />
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center w-1/6 justify-center">
-                    <label htmlFor={`${notif.id} checkbox`}>
-                      <input
-                        type="checkbox"
-                        id={`${notif.id} checkbox`}
-                        name={`${notif.id} checkbox`}
-                        onClick={() => handleCheckbox(i)}
-                        defaultChecked={notif.completed}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </fieldset>
-            )}
+                </fieldset>
+              )}
           </div>
         ))}
 
-        <div className="flex flex-row border items-center">
+        <div className="flex flex-row border items-center h-full">
           <div className="title">Completed Notifications</div>
         </div>
         {notification.map((notif: NotificationModalData, i: number) => (
@@ -134,10 +140,14 @@ function AlertNotification() {
                 </legend>
 
                 <div className="flex flex-row border">
-                  <div className="border px-2 bg-blue-100"></div>
+                  <div className={`notification-label-${notif.type}`}></div>
                   <div className="flex flex-col border w-5/6">
-                    <div className="notification-label">
-                      {`${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`}
+                    <div className="px-4">
+                      {`${
+                        notif.type === "Medicine"
+                          ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
+                          : `${notif.quantity} ${notif.unit} of ${notif.name}`
+                      }`}
                     </div>
                     <div className="notification-time">{notif.time}</div>
                   </div>
@@ -163,6 +173,6 @@ function AlertNotification() {
       </div>
     </div>
   );
-}
+};
 
 export default AlertNotification;
