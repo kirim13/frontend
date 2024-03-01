@@ -15,21 +15,23 @@ function LeftSidebar() {
             (pathname.includes(link.route) && link.route.length > 1) ||
             pathname === link.route;
           return (
-            <Link
-              href={link.route}
-              key={link.label}
-              className={`leftsidebar_link ${
-                isActive && "bg-blue-700 text-white"
-              }`}
-            >
-              <Image
-                src={link.imgURL}
-                alt={link.label}
-                width={24}
-                height={24}
-              />
-              <p className="text-black-1 mx-lg:hidden">{link.label}</p>
-            </Link>
+            <>
+              <Link
+                href={link.route}
+                key={link.label}
+                className={`leftsidebar_link ${
+                  isActive && "bg-blue-700 text-white"
+                }`}
+              >
+                <Image
+                  src={link.imgURL}
+                  alt={link.label}
+                  width={24}
+                  height={24}
+                />
+                <p className="text-black-1 mx-lg:hidden">{link.label}</p>
+              </Link>
+            </>
           );
         })}
       </div>
