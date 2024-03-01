@@ -1,6 +1,5 @@
 "use client";
 
-import AlertNotification from "@/components/notifications/AlertNotification";
 import Calendar from "@/components/notifications/Calendar";
 
 export default function EventCalendar() {
