@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  daysOfTheWeek,
-  notificationType,
-  FrequencyUnit,
-  RepeatingType,
-} from "@/constants";
+import { daysOfTheWeek, FrequencyUnit, RepeatingType } from "@/constants";
 import Image from "next/image";
 import { MouseEvent, useEffect, useState, useId } from "react";
 import { z } from "zod";

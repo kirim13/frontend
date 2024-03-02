@@ -21,7 +21,7 @@
 @layer components {
   /* Main */
   .main-container {
-    @apply flex flex-1 flex-col items-center justify-between border px-6 pt-20 pb-10 max-md:pb-32 sm:px-10;
+    @apply flex flex-1 flex-col items-center justify-between border px-6 pt-20 pb-10 max-md:pb-32 sm:px-10 min-w-[1000px];
   }
 
   .title {
@@ -51,6 +51,11 @@
 
   .notification-time {
     @apply px-4;
+  }
+
+  /* Add Friend */
+  .add-friend-form {
+    @apply px-80 p-64;
   }
 
   /* Social */

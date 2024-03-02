@@ -85,3 +85,24 @@ export const RepeatingType = [
   "Monthly",
   "Quarterly",
 ] as const;
+
+/* CALENDAR */
+export const weekDays = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+export const weekDaysAbbr = [
+  "Sun",
+  "Mon",
+  "Tues",
+  "Wed",
+  "Thurs",
+  "Fri",
+  "Sat",
+];

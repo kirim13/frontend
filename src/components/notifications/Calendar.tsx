@@ -8,24 +8,10 @@ import {
 } from "date-fns";
 import { NotificationModalData } from "./AddNotification";
 import AlertNotification from "./AlertNotification";
-
-type activeNotifType = {
-  type: string;
-  checked: boolean;
-};
+import { weekDaysAbbr } from "@/constants";
+import { activeNotifType } from "@/types/notifications";
 
 const Calendar = () => {
-  const weekDays = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const weekDaysAbbr = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"];
-
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), "MMMM"));
   const [currentYear, setCurrentYear] = useState(format(new Date(), "yyyy"));
   const [currentDaySelected, setCurrentDaySelected] = useState<Date>(
@@ -60,7 +46,7 @@ const Calendar = () => {
 
   useEffect(() => {
     fetch(
-      "http://localhost:3001/notifications/user/clspfh9em00004ju0nwklyklg",
+      `http://localhost:3001/notifications/user/clspfh9em00004ju0nwklyklg`,
       {
         method: "GET",
       }
