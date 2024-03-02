@@ -55,7 +55,7 @@
 
   /* Add Friend */
   .add-friend-form {
-    @apply px-80 p-64;
+    @apply px-64 py-24;
   }
 
   /* Social */
