@@ -3,40 +3,13 @@
 import { daysOfTheWeek, FrequencyUnit, RepeatingType } from "@/constants";
 import Image from "next/image";
 import { MouseEvent, useEffect, useState, useId } from "react";
-import { z } from "zod";
 import Modal from "../shared/modal";
 import Button from "../shared/Button";
-
-const ModalNotificationSchema = z.object({
-  id: z.string().optional(),
-  name: z.string(),
-  type: z.string(),
-  quantity: z.number().nonnegative(),
-  unit: z.string(),
-  dosageQuantity: z.number().nonnegative(),
-  dosageUnit: z.string(),
-  frequencyQuantity: z.number().nonnegative(),
-  frequencyUnit: z.string(),
-  dayOfTheWeek: z.string().optional(),
-  time: z.string(),
-  end_date: z.string().optional(),
-  isRepeating: z.string().optional(),
-  notes: z.string().optional(),
-  files: z.string().optional(),
-  imageSrc: z.string(),
-  userId: z.string().optional(),
-  petId: z.string(),
-  completed: z.boolean().optional(),
-  createdAt: z.coerce.date().optional(),
-});
-
-export type NotificationModalData = z.infer<typeof ModalNotificationSchema>;
-
-type NotificationModalProps = {
-  isOpen: boolean;
-  onSubmit: (data: NotificationModalData) => void;
-  onClose: () => void;
-};
+import {
+  FoodData,
+  NotificationModalData,
+  NotificationModalProps,
+} from "@/types/notifications";
 
 export const initialNotificationModalData: NotificationModalData = {
   name: "",
@@ -56,12 +29,6 @@ export const initialNotificationModalData: NotificationModalData = {
   imageSrc: "",
   userId: "clspfh9em00004ju0nwklyklg",
   petId: "clspggxx80000xwjdlinq5by6",
-};
-
-type FoodData = {
-  name: string;
-  quantity: number;
-  units: string;
 };
 
 const AddNotification: React.FC<NotificationModalProps> = ({

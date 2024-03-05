@@ -1,10 +1,5 @@
+import { ModalProps } from "@/types/shared";
 import React, { useState, useRef, useEffect } from "react";
-
-type ModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-};
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   const [isModalOpen, setModalOpen] = useState(isOpen);

@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
-import { NotificationModalData } from "./AddNotification";
 import Button from "@/components/shared/Button";
 import AddNotification from "@/components/notifications/AddNotification";
-
-interface AlertNotificationProps {
-  currentDaySelected: Date;
-}
+import {
+  AlertNotificationProps,
+  NotificationModalData,
+} from "@/types/notifications";
 
 const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
   const [notification, setNotification] = useState<NotificationModalData[]>([]);

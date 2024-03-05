@@ -6,10 +6,9 @@ import {
   isToday,
   startOfMonth,
 } from "date-fns";
-import { NotificationModalData } from "./AddNotification";
 import AlertNotification from "./AlertNotification";
 import { weekDaysAbbr } from "@/constants";
-import { activeNotifType } from "@/types/notifications";
+import { NotificationModalData, activeNotifType } from "@/types/notifications";
 
 const Calendar = () => {
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), "MMMM"));
