@@ -39,13 +39,12 @@ const Calendar = () => {
         });
       }
     });
-
     setActiveNotif(newActiveNotif);
   }, [notification]);
 
   useEffect(() => {
     fetch(
-      `http://localhost:3001/notifications/user/clspfh9em00004ju0nwklyklg`,
+      `http://localhost:3001/notifications/user/clte5s2lp0000st8dcrhqf8jt`,
       {
         method: "GET",
       }
@@ -124,10 +123,10 @@ const Calendar = () => {
                 {notification.map(
                   (notif, index) =>
                     notif.createdAt?.toString().slice(8, 10) ===
-                      format(dayNum, "d") && (
+                      format(dayNum, "dd") && (
                       <div
                         key={index}
-                        className="absolute top-0 right-0 h-full flex flex-col mt-0.5 mr-0.5 gap-y-0.5"
+                        className="absolute top-0 right-0 h-full flex mt-0.5 mr-0.5 gap-y-0.5"
                       >
                         <div
                           className={`${

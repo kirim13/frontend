@@ -29,7 +29,7 @@ function AddFriend() {
     e: MouseEvent<HTMLButtonElement>
   ) => {
     let relationship = {
-      fromUserId: `clt9gy1zx0000tcmzs7g5q4vo`,
+      fromUserId: `clte5s2lp0000st8dcrhqf8jt`,
       toUserId: `${id}`,
     };
     let relationshipData = JSON.stringify(relationship);
@@ -57,7 +57,7 @@ function AddFriend() {
 
   useEffect(() => {
     try {
-      fetch(`http://localhost:3001/users/clt9gy1zx0000tcmzs7g5q4vo`, {
+      fetch(`http://localhost:3001/users/clte5s2lp0000st8dcrhqf8jt`, {
         method: "GET",
       }).then(async (res) => {
         const userData = await res.json();
@@ -68,7 +68,6 @@ function AddFriend() {
         if (userData) {
           await setCurrentUser(userData);
           console.log(`Currently logged in: ${userData.username}`);
-          console.log(userData[0].fromUserRelationships);
         }
       });
     } catch (err) {

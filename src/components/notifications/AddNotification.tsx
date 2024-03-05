@@ -27,8 +27,8 @@ export const initialNotificationModalData: NotificationModalData = {
   notes: "",
   files: "",
   imageSrc: "",
-  userId: "clspfh9em00004ju0nwklyklg",
-  petId: "clspggxx80000xwjdlinq5by6",
+  userId: "clte5s2lp0000st8dcrhqf8jt",
+  petId: "clte5y7f6000113wkfx3ujf4h",
 };
 
 const AddNotification: React.FC<NotificationModalProps> = ({
@@ -41,7 +41,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
   );
   const [food, setFood] = useState<Map<number, FoodData>>(new Map());
 
-  const id = useId();
+  // const id = useId();
 
   const handleNextClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -114,6 +114,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
       (document.getElementById("files") as HTMLInputElement).value
     );
     sendData();
+    onClose();
   };
 
   const typeHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -431,7 +432,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
         )}
 
         {page === 2 ||
-          (page === 1 && notification.type === "Food" && (
+          (page === 1 && (
             <section className="section">
               <h2 className="heading2">Notification Schedule</h2>
               <div className="flex justify-center gap-4">
@@ -532,7 +533,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
           ))}
 
         {page === 3 ||
-          (page === 2 && notification.type === "Food" && (
+          (page === 2 && (
             <section className="section">
               <h2 className="heading2">Notification Last Notes</h2>
               <div className="flex flex-col">

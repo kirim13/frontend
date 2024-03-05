@@ -31,7 +31,7 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
 
   useEffect(() => {
     fetch(
-      "http://localhost:3001/notifications/user/clspfh9em00004ju0nwklyklg",
+      "http://localhost:3001/notifications/user/clte5s2lp0000st8dcrhqf8jt",
       {
         method: "GET",
       }
