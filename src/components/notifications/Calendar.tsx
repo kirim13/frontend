@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 import {
+  add,
   eachDayOfInterval,
   endOfMonth,
   format,
+  getDay,
   isToday,
   startOfMonth,
 } from "date-fns";
@@ -11,26 +13,23 @@ import { weekDaysAbbr } from "@/constants";
 import { NotificationModalData, activeNotifType } from "@/types/notifications";
 
 const Calendar = () => {
-  const [currentMonth, setCurrentMonth] = useState(format(new Date(), "MMMM"));
-  const [currentYear, setCurrentYear] = useState(format(new Date(), "yyyy"));
   const [currentDaySelected, setCurrentDaySelected] = useState<Date>(
     new Date()
   );
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [activeNotif, setActiveNotif] = useState<activeNotifType[]>([]);
 
-  const currentDate = new Date();
   const firstDayOfMonth = startOfMonth(currentDate);
   const lastDayOfMonth = endOfMonth(currentDate);
-
+  const startingDayIndex = getDay(firstDayOfMonth);
   const daysInMonth = eachDayOfInterval({
     start: firstDayOfMonth,
     end: lastDayOfMonth,
   });
-  const [activeNotif, setActiveNotif] = useState<activeNotifType[]>([]);
 
   useEffect(() => {
     const newActiveNotif: activeNotifType[] = [];
-
     notification.forEach((notif) => {
       if (!newActiveNotif.some((item) => item.type === notif.type)) {
         newActiveNotif.push({
@@ -42,6 +41,9 @@ const Calendar = () => {
     setActiveNotif(newActiveNotif);
   }, [notification]);
 
+  useEffect(() => {}, [currentDaySelected]);
+
+  // Placeholder for current user: clte5s2lp0000st8dcrhqf8jt
   useEffect(() => {
     fetch(
       `http://localhost:3001/notifications/user/clte5s2lp0000st8dcrhqf8jt`,
@@ -61,15 +63,36 @@ const Calendar = () => {
       .catch((err) => {
         console.error(err);
       });
-  }, []); // empty array means the effect will run once
-
-  useEffect(() => {
-    setCurrentMonth(format(new Date(), "MMMM"));
-    setCurrentYear(format(new Date(), "yyyy"));
   }, []);
 
   const handleDayClick = (dayNum: Date) => {
     setCurrentDaySelected(dayNum);
+  };
+
+  const handleMonthClick = (index: number, event: MouseEvent) => {
+    event.preventDefault();
+    let monthButton = document.querySelectorAll("#monthButton")[index];
+    if (monthButton.innerHTML === "&lt;") {
+      let year = 0;
+      if (currentDate.getMonth() === 12) {
+        year = -1;
+      }
+      const result = add(currentDate, {
+        years: year,
+        months: -1,
+      });
+      setCurrentDate(result);
+    } else if (monthButton.innerHTML === "&gt;") {
+      let year = 0;
+      if (currentDate.getMonth() === 12) {
+        year = 1;
+      }
+      const result = add(currentDate, {
+        years: year,
+        months: 1,
+      });
+      setCurrentDate(result);
+    }
   };
 
   const handleCheckbox = (i: number) => {
@@ -89,46 +112,68 @@ const Calendar = () => {
   return (
     <div className="w-full h-full border flex flex-row">
       <div className="w-1/2">
-        <div className="title flex items-center font-bold border">
-          {`${currentMonth} ${currentYear}`}
+        <div className="flex flex-row w-full">
+          <div className="title flex items-center font-bold w-1/2">
+            {`${format(currentDate, "MMMM")} ${format(currentDate, "yyyy")}`}
+          </div>
+          <div className="flex flex-row justify-end w-1/2 px-6 gap-4">
+            <button
+              id="monthButton"
+              onClick={(e) => handleMonthClick(0, e)}
+              className="font-bold text-[24px]"
+            >
+              &lt;
+            </button>
+            <button
+              id="monthButton"
+              onClick={(e) => handleMonthClick(1, e)}
+              className="font-bold text-[24px]"
+            >
+              &gt;
+            </button>
+          </div>
         </div>
+
         <div className="p-6 border h-3/5 pb-8">
-          <div className=" grid grid-cols-7 w-full gap-2">
+          <div className="grid grid-cols-7 gap-1">
             {weekDaysAbbr.map((day) => (
               <div key={day} className="text-center">
                 {day}
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1">
+          <div className="grid grid-cols-7 gap-1 h-full">
+            {Array.from({ length: startingDayIndex }).map((_, index) => {
+              return (
+                <div key={`empty-${index}`} className="relative border py-4" />
+              );
+            })}
             {daysInMonth.map((dayNum) => (
               <div
-                key={`${currentMonth} ${dayNum}`}
-                className="relative w-full"
-              >
-                <div
-                  className={`font-bold border p-7 text-[26px]
-                ${isToday(dayNum) ? "border-green-500" : null}
-                ${
+                key={`${currentDate.getMonth()} ${dayNum}`}
+                className={`relative border py-4 ${
                   currentDaySelected?.getDate() === dayNum?.getDate()
-                    ? "border-red-500"
+                    ? " border-red-500"
                     : null
-                }`}
-                  onClick={() => handleDayClick(dayNum)}
+                }
+                ${isToday(dayNum) ? " border-green-500" : null}
+                `}
+                onClick={() => handleDayClick(dayNum)}
+              >
+                <p
+                  className={`absolute bottom-0 left-0 font-bold text-[24px] px-1
+                `}
                 >
-                  <p className="absolute bottom-0 left-0 pl-1">
-                    {format(dayNum, "d")}
-                  </p>
-                </div>
-                {notification.map(
-                  (notif, index) =>
-                    notif.createdAt?.toString().slice(8, 10) ===
-                      format(dayNum, "dd") && (
-                      <div
-                        key={index}
-                        className="absolute top-0 right-0 h-full flex mt-0.5 mr-0.5 gap-y-0.5"
-                      >
+                  {format(dayNum, "d")}
+                </p>
+
+                <div className="absolute top-0 right-0 flex flex-col">
+                  {notification.map(
+                    (notif: NotificationModalData, index: number) =>
+                      notif.createdAt?.toString().slice(8, 10) ===
+                        format(dayNum, "dd") && (
                         <div
+                          key={index}
                           className={`${
                             notif.type === "Medicine" &&
                             activeNotif.some(
@@ -136,7 +181,7 @@ const Calendar = () => {
                                 item.type === notif.type &&
                                 item.checked === true
                             )
-                              ? "border h-1/6 px-1 bg-orange-300 rounded-full"
+                              ? "border p-1 bg-orange-300 rounded-full"
                               : null
                           } ${
                             notif.type === "Food" &&
@@ -145,7 +190,7 @@ const Calendar = () => {
                                 item.type === notif.type &&
                                 item.checked === true
                             )
-                              ? "border h-1/6 px-1 bg-violet-300 rounded-full"
+                              ? "border p-1 bg-violet-300 rounded-full"
                               : null
                           } ${
                             notif.type === "Water" &&
@@ -154,13 +199,13 @@ const Calendar = () => {
                                 item.type === notif.type &&
                                 item.checked === true
                             )
-                              ? "border h-1/6 px-1 bg-sky-300 rounded-full"
+                              ? "border p-1 bg-sky-300 rounded-full"
                               : null
                           }`}
                         />
-                      </div>
-                    )
-                )}
+                      )
+                  )}
+                </div>
               </div>
             ))}
           </div>
