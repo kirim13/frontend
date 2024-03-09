@@ -11,6 +11,7 @@ import {
   NotificationModalProps,
 } from "@/types/notifications";
 
+// Placeholder for current user: clte5s2lp0000st8dcrhqf8jt
 export const initialNotificationModalData: NotificationModalData = {
   name: "",
   type: "",

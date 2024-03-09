@@ -167,7 +167,7 @@ const Calendar = () => {
                   {format(dayNum, "d")}
                 </p>
 
-                <div className="absolute top-0 right-0 flex flex-col">
+                <div className="absolute top-0 right-0 flex flex-col gap-y-0.5 mt-0.5 mr-0.5">
                   {notification.map(
                     (notif: NotificationModalData, index: number) =>
                       notif.createdAt?.toString().slice(8, 10) ===
@@ -210,7 +210,7 @@ const Calendar = () => {
             ))}
           </div>
         </div>
-        <div className="w-full  h-1/5 px-4 pt-2">
+        <div className="w-full h-full px-4 pt-2 py-32">
           <div className="text-[20px] font-bold p-2">Filters:</div>
           <div className="flex flex-row w-full justify-around">
             <div className="flex flex-col w-1/2 gap-3">

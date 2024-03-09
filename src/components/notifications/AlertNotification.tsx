@@ -29,6 +29,7 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
     setDate(props.currentDaySelected);
   }, [props.currentDaySelected]);
 
+  // Placeholder for current user: clte5s2lp0000st8dcrhqf8jt
   useEffect(() => {
     fetch(
       "http://localhost:3001/notifications/user/clte5s2lp0000st8dcrhqf8jt",
@@ -132,41 +133,44 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
         </div>
         {notification.map((notif: NotificationModalData, i: number) => (
           <div key={`${i} ${notif.id}`}>
-            {notif && notif.completed === true && (
-              <fieldset className="notification-fieldset w-1/2">
-                <legend className={`notification-legend-${notif.type}`}>
-                  {notif.type}
-                </legend>
+            {notif &&
+              notif.completed === true &&
+              notif.createdAt?.toString().slice(0, 10) ===
+                date.toISOString().slice(0, 10) && (
+                <fieldset className="notification-fieldset w-1/2">
+                  <legend className={`notification-legend-${notif.type}`}>
+                    {notif.type}
+                  </legend>
 
-                <div className="flex flex-row border">
-                  <div className={`notification-label-${notif.type}`}></div>
-                  <div className="flex flex-col border w-5/6">
-                    <div className="px-4">
-                      {`${
-                        notif.type === "Medicine"
-                          ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
-                          : `${notif.quantity} ${notif.unit} of ${notif.name}`
-                      }`}
+                  <div className="flex flex-row border">
+                    <div className={`notification-label-${notif.type}`}></div>
+                    <div className="flex flex-col border w-5/6">
+                      <div className="px-4">
+                        {`${
+                          notif.type === "Medicine"
+                            ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
+                            : `${notif.quantity} ${notif.unit} of ${notif.name}`
+                        }`}
+                      </div>
+                      <div className="notification-time">{notif.time}</div>
                     </div>
-                    <div className="notification-time">{notif.time}</div>
+                    <div className="flex items-center w-1/6 justify-center">
+                      <label
+                        htmlFor={`${notif.id} checkbox`}
+                        className="flex justify-end border"
+                      >
+                        <input
+                          type="checkbox"
+                          id={`${notif.id} checkbox`}
+                          name={`${notif.id} checkbox`}
+                          onClick={() => handleCheckbox(i)}
+                          defaultChecked={notification[i].completed}
+                        />
+                      </label>
+                    </div>
                   </div>
-                  <div className="flex items-center w-1/6 justify-center">
-                    <label
-                      htmlFor={`${notif.id} checkbox`}
-                      className="flex justify-end border"
-                    >
-                      <input
-                        type="checkbox"
-                        id={`${notif.id} checkbox`}
-                        name={`${notif.id} checkbox`}
-                        onClick={() => handleCheckbox(i)}
-                        defaultChecked={notification[i].completed}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </fieldset>
-            )}
+                </fieldset>
+              )}
           </div>
         ))}
       </div>
