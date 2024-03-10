@@ -170,8 +170,8 @@ const Calendar = () => {
                 <div className="absolute top-0 right-0 flex flex-col gap-y-0.5 mt-0.5 mr-0.5">
                   {notification.map(
                     (notif: NotificationModalData, index: number) =>
-                      notif.createdAt?.toString().slice(8, 10) ===
-                        format(dayNum, "dd") && (
+                      notif.createdAt?.toString().slice(0, 10) ===
+                        dayNum.toISOString().slice(0, 10) && (
                         <div
                           key={index}
                           className={`${

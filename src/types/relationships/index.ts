@@ -3,6 +3,6 @@ export type User = {
   username: string;
   firstName: string;
   lastName: string;
-  toUserRelationships?: [];
-  fromUserRelationships?: { fromUserId: string }[];
+  userFriends?: [];
+  friendUserFriends?: [];
 };
