@@ -53,11 +53,11 @@
   }
   /* Notification */
   .notification-fieldset {
-    @apply right-2 border p-2;
+    @apply right-2 border p-2 flex;
   }
 
   .notification-time {
-    @apply px-4;
+    @apply flex px-4 gap-4;
   }
 
   /* Add Friend */

@@ -10,7 +10,12 @@ import {
 } from "date-fns";
 import AlertNotification from "./AlertNotification";
 import { weekDaysAbbr } from "@/constants";
-import { NotificationModalData, activeNotifType } from "@/types/notifications";
+import {
+  ActiveBreeds,
+  NotificationModalData,
+  UserPets,
+  activeNotifType,
+} from "@/types/notifications";
 
 const Calendar = () => {
   const [currentDaySelected, setCurrentDaySelected] = useState<Date>(
@@ -18,7 +23,9 @@ const Calendar = () => {
   );
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [activeNotif, setActiveNotif] = useState<activeNotifType[]>([]);
+  const [userPets, setUserPets] = useState<UserPets>({});
+  const [activeNames, setActiveNames] = useState<ActiveBreeds>({});
+  const [activeTypes, setActiveTypes] = useState<ActiveBreeds>({});
 
   const firstDayOfMonth = startOfMonth(currentDate);
   const lastDayOfMonth = endOfMonth(currentDate);
@@ -28,6 +35,7 @@ const Calendar = () => {
     end: lastDayOfMonth,
   });
 
+  /*
   useEffect(() => {
     const newActiveNotif: activeNotifType[] = [];
     notification.forEach((notif) => {
@@ -40,30 +48,48 @@ const Calendar = () => {
     });
     setActiveNotif(newActiveNotif);
   }, [notification]);
+  */
 
   useEffect(() => {}, [currentDaySelected]);
 
-  // Placeholder for current user: clte5s2lp0000st8dcrhqf8jt
   useEffect(() => {
-    fetch(
-      `http://localhost:3001/notifications/user/clte5s2lp0000st8dcrhqf8jt`,
-      {
-        method: "GET",
-      }
-    )
+    fetch("http://localhost:3001/users/clte5s2lp0000st8dcrhqf8jt", {
+      method: "GET",
+    })
       .then(async (res) => {
-        const data: NotificationModalData[] = await res.json();
+        const userData = await res.json();
+        const petData = userData.pets.reduce((acc: any, pet: any) => {
+          const petName = `${pet.firstName} ${pet.lastName}`;
+          if (!acc[pet.type]) {
+            acc[pet.type] = {};
+          }
+          if (!acc[pet.type][petName]) {
+            acc[pet.type][petName] = { notifications: {} };
+          }
+          pet.notifications.forEach((notification: any) => {
+            if (!acc[pet.type][petName].notifications[notification.type]) {
+              acc[pet.type][petName].notifications[notification.type] = [];
+            }
+            acc[pet.type][petName].notifications[notification.type].push(
+              notification.id
+            );
+          });
+          return acc;
+        }, {});
+        setUserPets((prev) => ({
+          ...prev,
+          ...petData,
+        }));
 
         if (!res.ok) {
           const error = res.statusText;
           return Promise.reject(error);
         }
-        setNotification(data);
       })
       .catch((err) => {
         console.error(err);
       });
-  }, []);
+  }, []); // empty array means the effect will run once
 
   const handleDayClick = (dayNum: Date) => {
     setCurrentDaySelected(dayNum);
@@ -95,19 +121,63 @@ const Calendar = () => {
     }
   };
 
-  const handleCheckbox = (i: number) => {
-    if (activeNotif[i]) {
-      let checkbox = document.getElementById(
-        `${activeNotif[i].type} checkbox`
-      ) as HTMLInputElement;
-      if (checkbox.checked) {
-        activeNotif[i].checked = true;
-      } else {
-        activeNotif[i].checked = false;
-      }
+  const handleBreedCheckbox = (checkboxType: string, i: number) => {
+    let checkbox = document.getElementById(
+      `${checkboxType} checkbox`
+    ) as HTMLInputElement;
+    const name = checkboxType.split(" ");
+    if (checkbox.checked) {
+      activeNames[checkboxType].checked = true;
+      fetch(
+        `http://localhost:3001/users/petData/johnsmith1/${name[0]}/${name[1]}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      ).then(async (res: any) => {
+        const data = await res.json();
+        let index = 0;
+        setNotification(
+          data.pets[0].notifications.reduce((arr: any, curr: any) => {
+            arr[index++] = curr;
+            return arr;
+          }, [])
+        );
+      });
+    } else {
+      activeNames[checkboxType].checked = false;
+      setNotification([]);
     }
-    setActiveNotif([...activeNotif]);
   };
+
+  const handleTypeCheckbox = (checkboxType: string, i: number) => {
+    let checkbox = document.getElementById(
+      `${checkboxType} checkbox`
+    ) as HTMLInputElement;
+    if (checkbox.checked) {
+      activeTypes[checkboxType].checked = true;
+    } else {
+      activeTypes[checkboxType].checked = false;
+    }
+  };
+
+  Object.keys(userPets).map((breed: string) => {
+    Object.keys(userPets[breed]).map((petName) => {
+      if (!activeNames[petName]) {
+        activeNames[petName] = { checked: false };
+      }
+      Object.keys(userPets[breed][petName].notifications).map(
+        (notificationType) => {
+          if (!activeTypes[notificationType]) {
+            activeTypes[notificationType] = { checked: false };
+          }
+        }
+      );
+    });
+  });
 
   return (
     <div className="w-full h-full border flex flex-row">
@@ -145,66 +215,55 @@ const Calendar = () => {
           <div className="grid grid-cols-7 gap-1 h-full">
             {Array.from({ length: startingDayIndex }).map((_, index) => {
               return (
-                <div key={`empty-${index}`} className="relative border py-4" />
+                <div
+                  key={`empty-${index}`}
+                  className="relative border py-4 h-full"
+                />
               );
             })}
             {daysInMonth.map((dayNum) => (
-              <div
-                key={`${currentDate.getMonth()} ${dayNum}`}
-                className={`relative border py-4 ${
-                  currentDaySelected?.getDate() === dayNum?.getDate()
-                    ? " border-red-500"
-                    : null
-                }
+              <div key={`${currentDate.getMonth()} ${dayNum}`}>
+                <div
+                  className={`relative border py-4 h-full ${
+                    currentDaySelected?.getDate() === dayNum?.getDate()
+                      ? " border-red-500"
+                      : null
+                  }
                 ${isToday(dayNum) ? " border-green-500" : null}
                 `}
-                onClick={() => handleDayClick(dayNum)}
-              >
-                <p
-                  className={`absolute bottom-0 left-0 font-bold text-[24px] px-1
-                `}
+                  onClick={() => handleDayClick(dayNum)}
                 >
-                  {format(dayNum, "d")}
-                </p>
-
-                <div className="absolute top-0 right-0 flex flex-col gap-y-0.5 mt-0.5 mr-0.5">
-                  {notification.map(
-                    (notif: NotificationModalData, index: number) =>
-                      notif.createdAt?.toString().slice(0, 10) ===
-                        dayNum.toISOString().slice(0, 10) && (
-                        <div
-                          key={index}
-                          className={`${
-                            notif.type === "Medicine" &&
-                            activeNotif.some(
-                              (item) =>
-                                item.type === notif.type &&
-                                item.checked === true
-                            )
-                              ? "border p-1 bg-orange-300 rounded-full"
-                              : null
-                          } ${
-                            notif.type === "Food" &&
-                            activeNotif.some(
-                              (item) =>
-                                item.type === notif.type &&
-                                item.checked === true
-                            )
-                              ? "border p-1 bg-violet-300 rounded-full"
-                              : null
-                          } ${
-                            notif.type === "Water" &&
-                            activeNotif.some(
-                              (item) =>
-                                item.type === notif.type &&
-                                item.checked === true
-                            )
-                              ? "border p-1 bg-sky-300 rounded-full"
-                              : null
-                          }`}
-                        />
-                      )
-                  )}
+                  <p
+                    className={`absolute bottom-0 left-0 font-bold text-[24px] px-1
+                `}
+                  >
+                    {format(dayNum, "d")}
+                  </p>
+                  <div className="absolute top-0 right-0 flex flex-col gap-y-0.5 mt-0.5 mr-0.5">
+                    {notification.map(
+                      (notif: NotificationModalData, index: number) =>
+                        notif.createdAt?.toString().slice(0, 10) ===
+                          dayNum.toISOString().slice(0, 10) && (
+                          <div key={index}>
+                            <div
+                              className={`${
+                                notif.type === "Medicine"
+                                  ? "border p-1 bg-orange-300 rounded-full"
+                                  : null
+                              } ${
+                                notif.type === "Food"
+                                  ? "border p-1 bg-violet-300 rounded-full"
+                                  : null
+                              } ${
+                                notif.type === "Water"
+                                  ? "border p-1 bg-sky-300 rounded-full"
+                                  : null
+                              }`}
+                            />
+                          </div>
+                        )
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -213,28 +272,46 @@ const Calendar = () => {
         <div className="w-full h-full px-4 pt-2 py-32">
           <div className="text-[20px] font-bold p-2">Filters:</div>
           <div className="flex flex-row w-full justify-around">
-            <div className="flex flex-col w-1/2 gap-3">
+            <div className="w-1/2">
               <div className="border text-center py-1">By Type</div>
-              {activeNotif.map((notif, i) => {
-                return (
+              <div className="border h-full">
+                {Object.keys(activeTypes).map((type, i) => (
                   <div
-                    key={`${notif.type}${i}`}
-                    className="flex flex-row gap-4 justify-start pl-16"
+                    key={type}
+                    className="mt-1 flex flex-row justify-center gap-4"
                   >
+                    {type}
                     <input
                       type="checkbox"
-                      id={`${notif.type} checkbox`}
-                      name={`${notif.type} checkbox`}
-                      defaultChecked={notif.checked}
-                      onClick={() => handleCheckbox(i)}
+                      id={`${type} checkbox`}
+                      name={`${type} checkbox`}
+                      defaultChecked={activeTypes[type].checked}
+                      onClick={() => handleTypeCheckbox(type, i)}
+                      className="justify-end"
                     />
-                    <div>{notif.type}</div>
                   </div>
-                );
-              })}
+                ))}
+              </div>
             </div>
             <div className="w-1/2">
               <div className="border text-center py-1">By Name</div>
+              <div className="border h-full">
+                {Object.keys(activeNames).map((name, i) => (
+                  <div
+                    key={name}
+                    className="mt-1 flex flex-row justify-center gap-4"
+                  >
+                    {`${name}`}
+                    <input
+                      type="checkbox"
+                      id={`${name} checkbox`}
+                      name={`${name} checkbox`}
+                      defaultChecked={activeNames[name].checked}
+                      onClick={() => handleBreedCheckbox(name, i)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
