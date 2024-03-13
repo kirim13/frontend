@@ -244,9 +244,8 @@ const Calendar = () => {
                       (notif: NotificationModalData, index: number) =>
                         notif.createdAt?.toString().slice(0, 10) ===
                           dayNum.toISOString().slice(0, 10) && (
-                          <>
+                          <div key={index}>
                             <div
-                              key={index}
                               className={`${
                                 notif.type === "Medicine"
                                   ? "border p-1 bg-orange-300 rounded-full"
@@ -261,7 +260,7 @@ const Calendar = () => {
                                   : null
                               }`}
                             />
-                          </>
+                          </div>
                         )
                     )}
                   </div>
