@@ -17,14 +17,14 @@ const ModalNotificationSchema = z.object({
   type: z.string(),
   quantity: z.number().nonnegative(),
   unit: z.string(),
-  dosageQuantity: z.number().nonnegative(),
-  dosageUnit: z.string(),
-  frequencyQuantity: z.number().nonnegative(),
-  frequencyUnit: z.string(),
-  dayOfTheWeek: z.string().optional(),
-  time: z.string(),
-  end_date: z.string().optional(),
-  isRepeating: z.string().optional(),
+  dosageQuantity: z.number().nonnegative().optional(),
+  dosageUnit: z.string().optional(),
+  frequencyQuantity: z.number().nonnegative().optional(),
+  frequencyUnit: z.string().optional(),
+  day: z.array(z.string().optional()),
+  time: z.array(z.string()),
+  endDate: z.array(z.string().optional()),
+  repeating: z.array(z.string().optional()),
   notes: z.string().optional(),
   files: z.string().optional(),
   imageSrc: z.string(),
@@ -44,4 +44,18 @@ export type NotificationModalProps = {
 
 export type AlertNotificationProps = {
   currentDaySelected: Date;
+};
+
+export type UserPets = {
+  [category: string]: {
+    [petName: string]: {
+      notifications: {
+        [notificationType: string]: string[];
+      };
+    };
+  };
+};
+
+export type ActiveBreeds = {
+  [breed: string]: { checked: boolean };
 };

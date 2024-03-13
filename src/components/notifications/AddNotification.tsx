@@ -18,13 +18,11 @@ export const initialNotificationModalData: NotificationModalData = {
   quantity: 0,
   unit: "",
   dosageQuantity: 0,
-  dosageUnit: "",
   frequencyQuantity: 0,
-  frequencyUnit: "",
-  dayOfTheWeek: "",
-  time: "",
-  end_date: "",
-  isRepeating: "",
+  day: [],
+  time: [],
+  endDate: [],
+  repeating: [],
   notes: "",
   files: "",
   imageSrc: "",
@@ -42,7 +40,10 @@ const AddNotification: React.FC<NotificationModalProps> = ({
   );
   const [food, setFood] = useState<Map<number, FoodData>>(new Map());
 
-  // const id = useId();
+  let numbers: number[] = Array.from(
+    { length: notification.frequencyQuantity || 1 },
+    (_, index) => index + 1
+  );
 
   const handleNextClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -118,7 +119,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
     onClose();
   };
 
-  const typeHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const typeHandler = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setNotification({
       ...notification,
@@ -126,7 +127,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
     });
   };
 
-  const addFoodHandler = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const addFoodHandler = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setFood(
       food.set(food.size + 1, {
@@ -137,10 +138,8 @@ const AddNotification: React.FC<NotificationModalProps> = ({
     );
   };
 
-  const deleteFoodHandler = (
-    e: React.MouseEvent<HTMLButtonElement>,
-    key: number
-  ) => {
+  const deleteFoodHandler = (e: MouseEvent<HTMLButtonElement>, key: number) => {
+    e.preventDefault();
     const updatedFood = new Map(food);
     updatedFood.delete(key);
     setFood(updatedFood);
@@ -432,162 +431,176 @@ const AddNotification: React.FC<NotificationModalProps> = ({
           </section>
         )}
 
-        {page === 2 ||
-          (page === 1 && (
-            <section className="section">
-              <h2 className="heading2">Notification Schedule</h2>
-              <div className="flex justify-center gap-4">
-                <div className="flex flex-col w-full">
-                  <label htmlFor="time">Time:</label>
-                  <input
-                    type="time"
-                    id="time"
-                    name="time"
-                    className="border"
-                    defaultValue={notification.time}
-                    onChange={(e) =>
-                      setNotification({
-                        ...notification,
-                        time: e.target.value,
-                      })
-                    }
-                  ></input>
-                </div>
-              </div>
-              <div className="flex flex-col">
-                <label htmlFor="isRepeating">Repeating?</label>
-                <select
-                  name="isRepeating"
-                  id="isRepeating"
-                  className="border"
-                  defaultValue={notification.isRepeating}
-                  onChange={(e) =>
-                    setNotification({
-                      ...notification,
-                      isRepeating: e.target.value,
-                    })
-                  }
-                >
-                  {RepeatingType.map((repeating, index) => (
-                    <option key={index} value={repeating}>
-                      {repeating}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col">
-                <label htmlFor="day">Day:</label>
-                <select
-                  name="day"
-                  id="day"
-                  className="border"
-                  defaultValue={notification.dayOfTheWeek}
-                  onChange={(e) =>
-                    setNotification({
-                      ...notification,
-                      dayOfTheWeek: e.target.value,
-                    })
-                  }
-                >
-                  {daysOfTheWeek.map((day, index) => (
-                    <option key={index} value={day}>
-                      {day}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex flex-col">
-                <label htmlFor="end_date">End Date:</label>
-                <input
-                  type="date"
-                  id="end_date"
-                  name="end_date"
-                  className="border"
-                  placeholder="MM/DD/YY"
-                  pattern="^(0[1-9]|1[0-2])\/0[1-3]|1[0-9])\/([0-9]{2})$"
-                  defaultValue={notification.end_date}
-                  onChange={(e) =>
-                    setNotification({
-                      ...notification,
-                      end_date: e.target.value,
-                    })
-                  }
-                ></input>
-              </div>
-              <Button>
-                <button
-                  type="button"
-                  onClick={handlePreviousClick}
-                  className="w-full py-2 border"
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  onClick={handleNextClick}
-                  className=" w-full py-2 border"
-                >
-                  Next
-                </button>
-              </Button>
-            </section>
-          ))}
+        {((page === 2 && notification.type != "Food") ||
+          (page === 1 && notification.type === "Food")) && (
+          <section className="section">
+            <h2 className="heading2">Notification Schedule</h2>
+            <div className="flex justify-center gap-4">
+              <div className="flex flex-col w-full">
+                {numbers.map((num: number, index: number) => (
+                  <div key={index}>
+                    <label htmlFor="time">{`Time for dosage ${num}:`}</label>
+                    <input
+                      type="time"
+                      id="time"
+                      name="time"
+                      className="border"
+                      defaultValue={notification.time[index]}
+                      onChange={(e) => {
+                        const updatedTime = [...notification.time];
+                        updatedTime[index] = e.target.value;
+                        setNotification({
+                          ...notification,
+                          time: updatedTime,
+                        });
+                      }}
+                    ></input>
 
-        {page === 3 ||
-          (page === 2 && (
-            <section className="section">
-              <h2 className="heading2">Notification Last Notes</h2>
-              <div className="flex flex-col">
-                <label htmlFor="notes">Additional Notes:</label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  className="border"
-                  value={notification.notes}
-                  onChange={(e) =>
-                    setNotification({ ...notification, notes: e.target.value })
-                  }
-                ></textarea>
+                    <div className="flex flex-col">
+                      <label htmlFor="isRepeating">Repeating?</label>
+                      <select
+                        name="isRepeating"
+                        id="isRepeating"
+                        className="border"
+                        defaultValue={notification.repeating[index]}
+                        onChange={(e) => {
+                          const updatedRepeating = [...notification.repeating];
+                          updatedRepeating[index] = e.target.value;
+                          setNotification({
+                            ...notification,
+                            repeating: updatedRepeating,
+                          });
+                        }}
+                      >
+                        {RepeatingType.map((repeating, index) => (
+                          <option key={index} value={repeating}>
+                            {repeating}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="day">Day:</label>
+                      <select
+                        name="day"
+                        id="day"
+                        className="border"
+                        defaultValue={notification.day[index]}
+                        onChange={(e) => {
+                          const updatedDay = [...notification.day];
+                          updatedDay[index] = e.target.value;
+                          setNotification({
+                            ...notification,
+                            day: updatedDay,
+                          });
+                        }}
+                      >
+                        {daysOfTheWeek.map((day, index) => (
+                          <option key={index} value={day}>
+                            {day}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex flex-col">
+                      <label htmlFor="end_date">End Date:</label>
+                      <input
+                        type="date"
+                        id="end_date"
+                        name="end_date"
+                        className="border"
+                        placeholder="MM/DD/YY"
+                        pattern="^(0[1-9]|1[0-2])\/0[1-3]|1[0-9])\/([0-9]{2})$"
+                        defaultValue={notification.endDate[index]}
+                        onChange={(e) => {
+                          const updatedEndDate = [...notification.endDate];
+                          updatedEndDate[index] = e.target.value;
+                          setNotification({
+                            ...notification,
+                            endDate: updatedEndDate,
+                          });
+                        }}
+                      ></input>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex flex-col gap-4">
-                <label htmlFor="files">Additional Files:</label>
-                <input
-                  type="file"
-                  id="files"
-                  name="files"
-                  className="border"
-                  onChange={handleFileChange}
-                  accept="image/*"
-                ></input>
-                <label htmlFor="files_active">Selected File:</label>
-                {notification.imageSrc !== "" && (
-                  <Image
-                    src={notification.imageSrc}
-                    id="files_active"
-                    width={100}
-                    height={100}
-                    alt="selected file"
-                  />
-                )}
-              </div>
-              <Button>
-                <button
-                  type="button"
-                  onClick={handlePreviousClick}
-                  className="w-full py-2 border"
-                >
-                  Previous
-                </button>
-                <button
-                  type="submit"
-                  className="w-full py-2 border"
-                  onClick={handleSubmitClick}
-                >
-                  Submit
-                </button>
-              </Button>
-            </section>
-          ))}
+            </div>
+
+            <Button>
+              <button
+                type="button"
+                onClick={handlePreviousClick}
+                className="w-full py-2 border"
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={handleNextClick}
+                className=" w-full py-2 border"
+              >
+                Next
+              </button>
+            </Button>
+          </section>
+        )}
+
+        {((page === 3 && notification.type != "Food") ||
+          (page === 2 && notification.type === "Food")) && (
+          <section className="section">
+            <h2 className="heading2">Notification Last Notes</h2>
+            <div className="flex flex-col">
+              <label htmlFor="notes">Additional Notes:</label>
+              <textarea
+                id="notes"
+                name="notes"
+                className="border"
+                value={notification.notes}
+                onChange={(e) =>
+                  setNotification({ ...notification, notes: e.target.value })
+                }
+              ></textarea>
+            </div>
+            <div className="flex flex-col gap-4">
+              <label htmlFor="files">Additional Files:</label>
+              <input
+                type="file"
+                id="files"
+                name="files"
+                className="border"
+                onChange={handleFileChange}
+                accept="image/*"
+              ></input>
+              <label htmlFor="files_active">Selected File:</label>
+              {notification.imageSrc !== "" && (
+                <Image
+                  src={notification.imageSrc}
+                  id="files_active"
+                  width={100}
+                  height={100}
+                  alt="selected file"
+                />
+              )}
+            </div>
+            <Button>
+              <button
+                type="button"
+                onClick={handlePreviousClick}
+                className="w-full py-2 border"
+              >
+                Previous
+              </button>
+              <button
+                type="submit"
+                className="w-full py-2 border"
+                onClick={handleSubmitClick}
+              >
+                Submit
+              </button>
+            </Button>
+          </section>
+        )}
       </form>
     </Modal>
   );
