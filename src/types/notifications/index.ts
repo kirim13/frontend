@@ -38,12 +38,15 @@ export type NotificationModalData = z.infer<typeof ModalNotificationSchema>;
 
 export type NotificationModalProps = {
   isOpen: boolean;
-  onSubmit: (data: NotificationModalData) => void;
+  onSubmit: (data: NotificationModalData[]) => void;
   onClose: () => void;
 };
 
 export type AlertNotificationProps = {
   currentDaySelected: Date;
+  notifications: NotificationModalData[];
+  activeTypes: ActiveTypes;
+  activeNames: ActiveNames;
 };
 
 export type UserPets = {
@@ -56,6 +59,10 @@ export type UserPets = {
   };
 };
 
-export type ActiveBreeds = {
-  [breed: string]: { checked: boolean };
+export type ActiveNames = {
+  [id: string]: { name: string; checked: boolean };
+};
+
+export type ActiveTypes = {
+  [type: string]: { checked: boolean };
 };

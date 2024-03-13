@@ -4,7 +4,6 @@ import AddNotification from "@/components/notifications/AddNotification";
 import {
   AlertNotificationProps,
   NotificationModalData,
-  UserPets,
 } from "@/types/notifications";
 
 const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
@@ -12,9 +11,6 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
   const [date, setDate] = useState(new Date());
   const [isNotificationModalOpen, setNotificationModalOpen] =
     useState<boolean>(false);
-  const [notificationData, setNotificationData] =
-    useState<NotificationModalData | null>(null);
-  const [userPets, setUserPets] = useState<UserPets>({});
 
   const handleNotificationModalOpen = () => {
     setNotificationModalOpen(true);
@@ -22,8 +18,8 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
   const handleCloseNotificationModal = () => {
     setNotificationModalOpen(false);
   };
-  const handleFormSubmit = (data: NotificationModalData): void => {
-    setNotificationData(data);
+  const handleFormSubmit = (data: NotificationModalData[]): void => {
+    setNotification(data);
     handleCloseNotificationModal();
   };
 
@@ -31,45 +27,9 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
     setDate(props.currentDaySelected);
   }, [props.currentDaySelected]);
 
-  // Placeholder for current user: clte5s2lp0000st8dcrhqf8jt
   useEffect(() => {
-    fetch("http://localhost:3001/users/clte5s2lp0000st8dcrhqf8jt", {
-      method: "GET",
-    })
-      .then(async (res) => {
-        const userData = await res.json();
-        const petData = userData.pets.reduce((acc: any, pet: any) => {
-          const petName = `${pet.firstName} ${pet.lastName}`;
-          if (!acc[pet.type]) {
-            acc[pet.type] = {};
-          }
-          if (!acc[pet.type][petName]) {
-            acc[pet.type][petName] = { notifications: {} };
-          }
-          pet.notifications.forEach((notification: any) => {
-            if (!acc[pet.type][petName].notifications[notification.type]) {
-              acc[pet.type][petName].notifications[notification.type] = [];
-            }
-            acc[pet.type][petName].notifications[notification.type].push(
-              notification.id
-            );
-          });
-          return acc;
-        }, {});
-        setUserPets((prev) => ({
-          ...prev,
-          ...petData,
-        }));
-
-        if (!res.ok) {
-          const error = res.statusText;
-          return Promise.reject(error);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []); // empty array means the effect will run once
+    setNotification(props.notifications);
+  }, [props.notifications]);
 
   const handleCheckbox = (i: number) => {
     if (notification[i]) {
@@ -108,40 +68,14 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
           </div>
         </div>
 
-        {Object.keys(userPets).map((breed: any) => (
-          <div key={breed}>
-            {breed}
-            {Object.keys(userPets[breed]).map((petName: any) => (
-              <div key={petName}>
-                {petName}
-                {Object.keys(userPets[breed][petName].notifications).map(
-                  (notif) => (
-                    <div key={notif}>
-                      {notif}
-                      {Object.keys(
-                        userPets[breed][petName].notifications[notif]
-                      ).map((notifId: any) => (
-                        <div key={notifId}>
-                          {
-                            userPets[breed][petName].notifications[notif][
-                              notifId
-                            ]
-                          }
-                        </div>
-                      ))}
-                    </div>
-                  )
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
         {notification.map((notif: NotificationModalData, i: number) => (
           <div key={`${i} ${notif.id}`} className="px-2 h-full">
             {notif &&
               notif.createdAt?.toString().slice(0, 10) ===
                 date.toISOString().slice(0, 10) &&
-              notif.completed === false && (
+              notif.completed === false &&
+              props.activeTypes[notif.type].checked &&
+              props.activeNames[notif.petId].checked && (
                 <fieldset className="notification-fieldset w-1/2">
                   <legend className={`notification-legend-${notif.type}`}>
                     {notif.type}

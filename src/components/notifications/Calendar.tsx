@@ -11,10 +11,10 @@ import {
 import AlertNotification from "./AlertNotification";
 import { weekDaysAbbr } from "@/constants";
 import {
-  ActiveBreeds,
+  ActiveNames,
+  ActiveTypes,
   NotificationModalData,
   UserPets,
-  activeNotifType,
 } from "@/types/notifications";
 
 const Calendar = () => {
@@ -24,8 +24,8 @@ const Calendar = () => {
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [userPets, setUserPets] = useState<UserPets>({});
-  const [activeNames, setActiveNames] = useState<ActiveBreeds>({});
-  const [activeTypes, setActiveTypes] = useState<ActiveBreeds>({});
+  const [activeNames, setActiveNames] = useState<ActiveNames>({});
+  const [activeTypes, setActiveTypes] = useState<ActiveTypes>({});
 
   const firstDayOfMonth = startOfMonth(currentDate);
   const lastDayOfMonth = endOfMonth(currentDate);
@@ -34,21 +34,6 @@ const Calendar = () => {
     start: firstDayOfMonth,
     end: lastDayOfMonth,
   });
-
-  /*
-  useEffect(() => {
-    const newActiveNotif: activeNotifType[] = [];
-    notification.forEach((notif) => {
-      if (!newActiveNotif.some((item) => item.type === notif.type)) {
-        newActiveNotif.push({
-          type: notif.type,
-          checked: false,
-        });
-      }
-    });
-    setActiveNotif(newActiveNotif);
-  }, [notification]);
-  */
 
   useEffect(() => {}, [currentDaySelected]);
 
@@ -60,17 +45,24 @@ const Calendar = () => {
         const userData = await res.json();
         const petData = userData.pets.reduce((acc: any, pet: any) => {
           const petName = `${pet.firstName} ${pet.lastName}`;
+          const petId = pet.id;
           if (!acc[pet.type]) {
             acc[pet.type] = {};
+            setActiveNames(acc[pet.type]);
           }
-          if (!acc[pet.type][petName]) {
-            acc[pet.type][petName] = { notifications: {} };
+          if (!acc[pet.type][petId]) {
+            acc[pet.type][petId] = {
+              notifications: {},
+              name: petName,
+              checked: false,
+            };
           }
           pet.notifications.forEach((notification: any) => {
-            if (!acc[pet.type][petName].notifications[notification.type]) {
-              acc[pet.type][petName].notifications[notification.type] = [];
+            if (!acc[pet.type][petId].notifications[notification.type]) {
+              acc[pet.type][petId].notifications[notification.type] = [];
+              setActiveTypes(acc[pet.type][petId].notifications);
             }
-            acc[pet.type][petName].notifications[notification.type].push(
+            acc[pet.type][petId].notifications[notification.type].push(
               notification.id
             );
           });
@@ -121,63 +113,42 @@ const Calendar = () => {
     }
   };
 
-  const handleBreedCheckbox = (checkboxType: string, i: number) => {
-    let checkbox = document.getElementById(
-      `${checkboxType} checkbox`
-    ) as HTMLInputElement;
-    const name = checkboxType.split(" ");
-    if (checkbox.checked) {
-      activeNames[checkboxType].checked = true;
-      fetch(
-        `http://localhost:3001/users/petData/johnsmith1/${name[0]}/${name[1]}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      ).then(async (res: any) => {
-        const data = await res.json();
-        let index = 0;
-        setNotification(
-          data.pets[0].notifications.reduce((arr: any, curr: any) => {
-            arr[index++] = curr;
-            return arr;
-          }, [])
-        );
-      });
-    } else {
-      activeNames[checkboxType].checked = false;
-      setNotification([]);
-    }
+  const handleNameCheckbox = (checkboxType: string, i: number) => {
+    setActiveNames((prevActiveNames) => ({
+      ...prevActiveNames,
+      [checkboxType]: {
+        ...prevActiveNames[checkboxType],
+        checked: !prevActiveNames[checkboxType]?.checked,
+        name: prevActiveNames[checkboxType].name,
+      },
+    }));
+    fetch(`http://localhost:3001/users/petData/johnsmith1/${checkboxType}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    }).then(async (res: any) => {
+      const data = await res.json();
+      let index = 0;
+      setNotification(
+        data.pets[0].notifications.reduce((arr: any, curr: any) => {
+          arr[index++] = curr;
+          return arr;
+        }, [])
+      );
+    });
   };
 
   const handleTypeCheckbox = (checkboxType: string, i: number) => {
-    let checkbox = document.getElementById(
-      `${checkboxType} checkbox`
-    ) as HTMLInputElement;
-    if (checkbox.checked) {
-      activeTypes[checkboxType].checked = true;
-    } else {
-      activeTypes[checkboxType].checked = false;
-    }
+    setActiveTypes((prevActiveTypes) => ({
+      ...prevActiveTypes,
+      [checkboxType]: {
+        ...prevActiveTypes[checkboxType],
+        checked: !prevActiveTypes[checkboxType]?.checked,
+      },
+    }));
   };
-
-  Object.keys(userPets).map((breed: string) => {
-    Object.keys(userPets[breed]).map((petName) => {
-      if (!activeNames[petName]) {
-        activeNames[petName] = { checked: false };
-      }
-      Object.keys(userPets[breed][petName].notifications).map(
-        (notificationType) => {
-          if (!activeTypes[notificationType]) {
-            activeTypes[notificationType] = { checked: false };
-          }
-        }
-      );
-    });
-  });
 
   return (
     <div className="w-full h-full border flex flex-row">
@@ -247,15 +218,19 @@ const Calendar = () => {
                           <div key={index}>
                             <div
                               className={`${
-                                notif.type === "Medicine"
+                                notif.type === "Medicine" &&
+                                activeTypes[notif.type].checked &&
+                                activeNames[notif.petId].checked
                                   ? "border p-1 bg-orange-300 rounded-full"
                                   : null
                               } ${
-                                notif.type === "Food"
+                                notif.type === "Food" &&
+                                activeTypes[notif.type].checked
                                   ? "border p-1 bg-violet-300 rounded-full"
                                   : null
                               } ${
-                                notif.type === "Water"
+                                notif.type === "Water" &&
+                                activeTypes[notif.type].checked
                                   ? "border p-1 bg-sky-300 rounded-full"
                                   : null
                               }`}
@@ -287,7 +262,6 @@ const Calendar = () => {
                       name={`${type} checkbox`}
                       defaultChecked={activeTypes[type].checked}
                       onClick={() => handleTypeCheckbox(type, i)}
-                      className="justify-end"
                     />
                   </div>
                 ))}
@@ -296,18 +270,18 @@ const Calendar = () => {
             <div className="w-1/2">
               <div className="border text-center py-1">By Name</div>
               <div className="border h-full">
-                {Object.keys(activeNames).map((name, i) => (
+                {Object.keys(activeNames).map((id, i) => (
                   <div
-                    key={name}
+                    key={id}
                     className="mt-1 flex flex-row justify-center gap-4"
                   >
-                    {`${name}`}
+                    {`${activeNames[id].name}`}
                     <input
                       type="checkbox"
                       id={`${name} checkbox`}
                       name={`${name} checkbox`}
-                      defaultChecked={activeNames[name].checked}
-                      onClick={() => handleBreedCheckbox(name, i)}
+                      defaultChecked={activeNames[id].checked}
+                      onClick={() => handleNameCheckbox(id, i)}
                     />
                   </div>
                 ))}
@@ -317,7 +291,12 @@ const Calendar = () => {
         </div>
       </div>
       <div className="w-1/2">
-        <AlertNotification currentDaySelected={currentDaySelected} />
+        <AlertNotification
+          currentDaySelected={currentDaySelected}
+          notifications={notification}
+          activeNames={activeNames}
+          activeTypes={activeTypes}
+        />
       </div>
     </div>
   );
