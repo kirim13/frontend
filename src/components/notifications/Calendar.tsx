@@ -13,11 +13,12 @@ import { weekDaysAbbr } from "@/constants";
 import {
   ActiveNames,
   ActiveTypes,
+  CalendarProps,
   NotificationModalData,
   UserPets,
 } from "@/types/notifications";
 
-const Calendar = () => {
+const Calendar: React.FC<CalendarProps> = ({ user }) => {
   const [currentDaySelected, setCurrentDaySelected] = useState<Date>(
     new Date()
   );
@@ -38,50 +39,53 @@ const Calendar = () => {
   useEffect(() => {}, [currentDaySelected]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/users/clte5s2lp0000st8dcrhqf8jt", {
-      method: "GET",
-    })
-      .then(async (res) => {
-        const userData = await res.json();
-        const petData = userData.pets.reduce((acc: any, pet: any) => {
-          const petName = `${pet.firstName} ${pet.lastName}`;
-          const petId = pet.id;
-          if (!acc[pet.type]) {
-            acc[pet.type] = {};
-            setActiveNames(acc[pet.type]);
-          }
-          if (!acc[pet.type][petId]) {
-            acc[pet.type][petId] = {
-              notifications: {},
-              name: petName,
-              checked: false,
-            };
-          }
-          pet.notifications.forEach((notification: any) => {
-            if (!acc[pet.type][petId].notifications[notification.type]) {
-              acc[pet.type][petId].notifications[notification.type] = [];
-              setActiveTypes(acc[pet.type][petId].notifications);
-            }
-            acc[pet.type][petId].notifications[notification.type].push(
-              notification.id
-            );
-          });
-          return acc;
-        }, {});
-        setUserPets((prev) => ({
-          ...prev,
-          ...petData,
-        }));
-
-        if (!res.ok) {
-          const error = res.statusText;
-          return Promise.reject(error);
-        }
+    if (user?.id) {
+      fetch(`http://localhost:3001/users/${user.id}`, {
+        method: "GET",
       })
-      .catch((err) => {
-        console.error(err);
-      });
-  }, []); // empty array means the effect will run once
+        .then(async (res) => {
+          const userData = await res.json();
+          setActiveNames({});
+          setActiveTypes({});
+          const petData = userData.pets.reduce((acc: any, pet: any) => {
+            const petName = `${pet.firstName} ${pet.lastName}`;
+            const petId = pet.id;
+            if (!acc[pet.type]) {
+              acc[pet.type] = {};
+              setActiveNames(acc[pet.type]);
+            }
+            if (!acc[pet.type][petId]) {
+              acc[pet.type][petId] = {
+                notifications: {},
+                name: petName,
+                checked: false,
+              };
+            }
+            pet.notifications.forEach((notification: any) => {
+              if (!acc[pet.type][petId].notifications[notification.type]) {
+                acc[pet.type][petId].notifications[notification.type] = [];
+                setActiveTypes(acc[pet.type][petId].notifications);
+              }
+              acc[pet.type][petId].notifications[notification.type].push(
+                notification.id
+              );
+            });
+            return acc;
+          }, {});
+          setUserPets({
+            petData,
+          });
+
+          if (!res.ok) {
+            const error = res.statusText;
+            return Promise.reject(error);
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+  }, [user]);
 
   const handleDayClick = (dayNum: Date) => {
     setCurrentDaySelected(dayNum);
@@ -122,22 +126,29 @@ const Calendar = () => {
         name: prevActiveNames[checkboxType].name,
       },
     }));
-    fetch(`http://localhost:3001/users/petData/johnsmith1/${checkboxType}`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    }).then(async (res: any) => {
-      const data = await res.json();
-      let index = 0;
-      setNotification(
-        data.pets[0].notifications.reduce((arr: any, curr: any) => {
-          arr[index++] = curr;
-          return arr;
-        }, [])
-      );
-    });
+    if (user?.username) {
+      fetch(
+        `http://localhost:3001/users/petData/${user.username}/${checkboxType}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      ).then(async (res: any) => {
+        const data = await res.json();
+        let index = 0;
+        if (data.pets[0]) {
+          setNotification(
+            data.pets[0].notifications.reduce((arr: any, curr: any) => {
+              arr[index++] = curr;
+              return arr;
+            }, [])
+          );
+        }
+      });
+    }
   };
 
   const handleTypeCheckbox = (checkboxType: string, i: number) => {
@@ -152,8 +163,8 @@ const Calendar = () => {
 
   return (
     <div className="w-full h-full border flex flex-row">
-      <div className="w-1/2">
-        <div className="flex flex-row w-full">
+      <div className="w-1/2 h-1/2">
+        <div className="flex flex-row">
           <div className="title flex items-center font-bold w-1/2">
             {`${format(currentDate, "MMMM")} ${format(currentDate, "yyyy")}`}
           </div>
@@ -183,19 +194,16 @@ const Calendar = () => {
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7 gap-1 h-full">
+          <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: startingDayIndex }).map((_, index) => {
               return (
-                <div
-                  key={`empty-${index}`}
-                  className="relative border py-4 h-full"
-                />
+                <div key={`empty-${index}`} className="relative border py-4" />
               );
             })}
             {daysInMonth.map((dayNum) => (
               <div key={`${currentDate.getMonth()} ${dayNum}`}>
                 <div
-                  className={`relative border py-4 h-full ${
+                  className={`relative border py-4 ${
                     currentDaySelected?.getDate() === dayNum?.getDate()
                       ? " border-red-500"
                       : null
@@ -214,7 +222,9 @@ const Calendar = () => {
                     {notification.map(
                       (notif: NotificationModalData, index: number) =>
                         notif.createdAt?.toString().slice(0, 10) ===
-                          dayNum.toISOString().slice(0, 10) && (
+                          dayNum.toISOString().slice(0, 10) &&
+                        activeTypes[notif.type] &&
+                        activeNames[notif.petId] && (
                           <div key={index}>
                             <div
                               className={`${
@@ -225,12 +235,14 @@ const Calendar = () => {
                                   : null
                               } ${
                                 notif.type === "Food" &&
-                                activeTypes[notif.type].checked
+                                activeTypes[notif.type].checked &&
+                                activeNames[notif.petId].checked
                                   ? "border p-1 bg-violet-300 rounded-full"
                                   : null
                               } ${
                                 notif.type === "Water" &&
-                                activeTypes[notif.type].checked
+                                activeTypes[notif.type].checked &&
+                                activeNames[notif.petId].checked
                                   ? "border p-1 bg-sky-300 rounded-full"
                                   : null
                               }`}
@@ -244,12 +256,12 @@ const Calendar = () => {
             ))}
           </div>
         </div>
-        <div className="w-full h-full px-4 pt-2 py-32">
+        <div className="p-4 pt-1 border">
           <div className="text-[20px] font-bold p-2">Filters:</div>
-          <div className="flex flex-row w-full justify-around">
+          <div className="flex flex-row justify-around">
             <div className="w-1/2">
               <div className="border text-center py-1">By Type</div>
-              <div className="border h-full">
+              <div className="border">
                 {Object.keys(activeTypes).map((type, i) => (
                   <div
                     key={type}
@@ -269,19 +281,19 @@ const Calendar = () => {
             </div>
             <div className="w-1/2">
               <div className="border text-center py-1">By Name</div>
-              <div className="border h-full">
-                {Object.keys(activeNames).map((id, i) => (
+              <div className="border">
+                {Object.keys(activeNames).map((name, i) => (
                   <div
-                    key={id}
+                    key={name}
                     className="mt-1 flex flex-row justify-center gap-4"
                   >
-                    {`${activeNames[id].name}`}
+                    {`${activeNames[name].name}`}
                     <input
                       type="checkbox"
                       id={`${name} checkbox`}
                       name={`${name} checkbox`}
-                      defaultChecked={activeNames[id].checked}
-                      onClick={() => handleNameCheckbox(id, i)}
+                      defaultChecked={activeNames[name].checked}
+                      onClick={() => handleNameCheckbox(name, i)}
                     />
                   </div>
                 ))}
@@ -296,6 +308,7 @@ const Calendar = () => {
           notifications={notification}
           activeNames={activeNames}
           activeTypes={activeTypes}
+          activeUser={user}
         />
       </div>
     </div>

@@ -1,6 +1,4 @@
 import { useEffect, useState } from "react";
-import Button from "@/components/shared/Button";
-import AddNotification from "@/components/notifications/AddNotification";
 import {
   AlertNotificationProps,
   NotificationModalData,
@@ -8,24 +6,6 @@ import {
 
 const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
   const [notification, setNotification] = useState<NotificationModalData[]>([]);
-  const [date, setDate] = useState(new Date());
-  const [isNotificationModalOpen, setNotificationModalOpen] =
-    useState<boolean>(false);
-
-  const handleNotificationModalOpen = () => {
-    setNotificationModalOpen(true);
-  };
-  const handleCloseNotificationModal = () => {
-    setNotificationModalOpen(false);
-  };
-  const handleFormSubmit = (data: NotificationModalData[]): void => {
-    setNotification(data);
-    handleCloseNotificationModal();
-  };
-
-  useEffect(() => {
-    setDate(props.currentDaySelected);
-  }, [props.currentDaySelected]);
 
   useEffect(() => {
     setNotification(props.notifications);
@@ -38,11 +18,38 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
       ) as HTMLInputElement;
       if (checkbox.checked) {
         notification[i].completed = true;
+        console.log(
+          `${props.activeUser?.username} checked ${notification[i].name}`
+        );
       } else {
         notification[i].completed = false;
+        console.log(
+          `${props.activeUser?.username} unchecked ${notification[i].name}`
+        );
       }
     }
     setNotification([...notification]);
+    fetch(
+      `http://localhost:3001/notifications/completed/${notification[i].id}`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          completed: notification[i].completed,
+        }),
+      }
+    )
+      .then(async (res) => {
+        if (res.ok) {
+          console.log(await res.json());
+        } else throw new Error("Failed to update notification");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   };
 
   return (
@@ -50,30 +57,17 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
       <div className="flex flex-col">
         <div className="flex border flex-row items-center">
           <div className="title">Notifications</div>
-          <p>{date.toLocaleDateString()}</p>
-          <div className="flex w-full px-2 justify-end">
-            <Button>
-              <button
-                onClick={handleNotificationModalOpen}
-                className="border p-2"
-              >
-                Add Notification
-              </button>
-              <AddNotification
-                isOpen={isNotificationModalOpen}
-                onClose={handleCloseNotificationModal}
-                onSubmit={handleFormSubmit}
-              />
-            </Button>
-          </div>
+          <p>{props.currentDaySelected.toLocaleDateString()}</p>
         </div>
 
         {notification.map((notif: NotificationModalData, i: number) => (
           <div key={`${i} ${notif.id}`} className="px-2 h-full">
             {notif &&
               notif.createdAt?.toString().slice(0, 10) ===
-                date.toISOString().slice(0, 10) &&
+                props.currentDaySelected.toISOString().slice(0, 10) &&
               notif.completed === false &&
+              props.activeTypes[notif.type] &&
+              props.activeNames[notif.petId] &&
               props.activeTypes[notif.type].checked &&
               props.activeNames[notif.petId].checked && (
                 <fieldset className="notification-fieldset w-1/2">
@@ -88,7 +82,8 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
                         notif.type === "Medicine"
                           ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
                           : `${notif.quantity} ${notif.unit} of ${notif.name}`
-                      }`}
+                      }
+                      `}
                       <div className="flex flex-row gap-4">
                         {notif.time.map((ti, i) => (
                           <div key={i}>
@@ -121,8 +116,12 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
           <div key={`${i} ${notif.id}`}>
             {notif &&
               notif.completed === true &&
+              props.activeTypes[notif.type] &&
+              props.activeNames[notif.petId] &&
+              props.activeTypes[notif.type].checked &&
+              props.activeNames[notif.petId].checked &&
               notif.createdAt?.toString().slice(0, 10) ===
-                date.toISOString().slice(0, 10) && (
+                props.currentDaySelected.toISOString().slice(0, 10) && (
                 <fieldset className="notification-fieldset w-1/2">
                   <legend className={`notification-legend-${notif.type}`}>
                     {notif.type}

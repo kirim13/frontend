@@ -2,7 +2,7 @@
 
 import { daysOfTheWeek, FrequencyUnit, RepeatingType } from "@/constants";
 import Image from "next/image";
-import { MouseEvent, useEffect, useState, useId } from "react";
+import { MouseEvent, useState, useEffect } from "react";
 import Modal from "../shared/modal";
 import Button from "../shared/Button";
 import {
@@ -11,7 +11,6 @@ import {
   NotificationModalProps,
 } from "@/types/notifications";
 
-// Placeholder for current user: clte5s2lp0000st8dcrhqf8jt
 export const initialNotificationModalData: NotificationModalData = {
   name: "",
   type: "",
@@ -26,19 +25,27 @@ export const initialNotificationModalData: NotificationModalData = {
   notes: "",
   files: "",
   imageSrc: "",
-  userId: "clte5s2lp0000st8dcrhqf8jt",
-  petId: "clte5y7f6000113wkfx3ujf4h",
+  userId: "",
+  petId: "clttnp58f0001693x54lumj70",
 };
 
 const AddNotification: React.FC<NotificationModalProps> = ({
   isOpen,
   onClose,
+  activeUser,
 }) => {
   const [page, setPage] = useState(0);
   const [notification, setNotification] = useState<NotificationModalData>(
     initialNotificationModalData
   );
   const [food, setFood] = useState<Map<number, FoodData>>(new Map());
+
+  useEffect(() => {
+    setNotification((prevNotif) => ({
+      ...prevNotif,
+      userId: activeUser?.id,
+    }));
+  }, [activeUser]);
 
   let numbers: number[] = Array.from(
     { length: notification.frequencyQuantity || 1 },
@@ -90,6 +97,7 @@ const AddNotification: React.FC<NotificationModalProps> = ({
 
   async function sendData() {
     const notificationData = JSON.stringify(notification);
+    console.log(notification);
     try {
       const response = await fetch("http://localhost:3001/notifications", {
         method: "POST",

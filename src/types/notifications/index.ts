@@ -1,4 +1,5 @@
-import { z } from "zod";
+import { StringValidation, z } from "zod";
+import { User } from "../relationships";
 
 export type activeNotifType = {
   type: string;
@@ -40,6 +41,7 @@ export type NotificationModalProps = {
   isOpen: boolean;
   onSubmit: (data: NotificationModalData[]) => void;
   onClose: () => void;
+  activeUser: User | null;
 };
 
 export type AlertNotificationProps = {
@@ -47,6 +49,7 @@ export type AlertNotificationProps = {
   notifications: NotificationModalData[];
   activeTypes: ActiveTypes;
   activeNames: ActiveNames;
+  activeUser: User | null;
 };
 
 export type UserPets = {
@@ -65,4 +68,8 @@ export type ActiveNames = {
 
 export type ActiveTypes = {
   [type: string]: { checked: boolean };
+};
+
+export type CalendarProps = {
+  user: User | null;
 };
