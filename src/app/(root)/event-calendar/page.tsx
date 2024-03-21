@@ -1,12 +1,13 @@
 "use client";
 
 import AddFriend from "@/components/notifications/AddFriend";
-import AddNotification from "@/components/notifications/AddNotification";
 import Calendar from "@/components/notifications/Calendar";
 import Button from "@/components/shared/Button";
 import { NotificationModalData } from "@/types/notifications";
 import { User } from "@/types/relationships";
 import { MouseEvent, useState } from "react";
+import NotificationModal from "@/components/notifications/NotificationModal";
+import AddPet from "@/components/notifications/AddPet";
 
 export default function EventCalendar() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -16,11 +17,11 @@ export default function EventCalendar() {
   const handleNotificationModalOpen = () => {
     setNotificationModalOpen(true);
   };
-  const handleCloseNotificationModal = () => {
+  const handleNotificationModalClose = () => {
     setNotificationModalOpen(false);
   };
   const handleFormSubmit = (data: NotificationModalData[]): void => {
-    handleCloseNotificationModal();
+    handleNotificationModalClose();
   };
 
   const changeUser = (e: MouseEvent<HTMLButtonElement>) => {
@@ -67,7 +68,10 @@ export default function EventCalendar() {
                 Set To marysmith1
               </button>
             </div>
-            <AddFriend />
+            <div className="flex flex-row gap-4">
+              <AddFriend />
+              <AddPet userId={currentUser?.id} />
+            </div>
           </div>
         </div>
       </div>
@@ -82,9 +86,9 @@ export default function EventCalendar() {
             >
               Add Notification
             </button>
-            <AddNotification
+            <NotificationModal
               isOpen={isNotificationModalOpen}
-              onClose={handleCloseNotificationModal}
+              onClose={handleNotificationModalClose}
               onSubmit={handleFormSubmit}
               activeUser={currentUser}
             />

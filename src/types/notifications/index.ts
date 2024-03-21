@@ -1,4 +1,4 @@
-import { StringValidation, z } from "zod";
+import { z } from "zod";
 import { User } from "../relationships";
 
 export type activeNotifType = {
@@ -22,9 +22,10 @@ const ModalNotificationSchema = z.object({
   dosageUnit: z.string().optional(),
   frequencyQuantity: z.number().nonnegative().optional(),
   frequencyUnit: z.string().optional(),
+  date: z.string(),
   day: z.array(z.string().optional()),
   time: z.array(z.string()),
-  endDate: z.array(z.string().optional()),
+  endDate: z.string().optional(),
   repeating: z.array(z.string().optional()),
   notes: z.string().optional(),
   files: z.string().optional(),
@@ -39,9 +40,10 @@ export type NotificationModalData = z.infer<typeof ModalNotificationSchema>;
 
 export type NotificationModalProps = {
   isOpen: boolean;
-  onSubmit: (data: NotificationModalData[]) => void;
+  onSubmit?: (data: NotificationModalData[]) => void;
   onClose: () => void;
-  activeUser: User | null;
+  activeUser?: User | null;
+  notificationProp?: NotificationModalData | null;
 };
 
 export type AlertNotificationProps = {

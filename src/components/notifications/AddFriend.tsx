@@ -1,5 +1,4 @@
 import { MouseEvent, useEffect, useState } from "react";
-import Button from "../shared/Button";
 import Modal from "../shared/modal";
 import { User } from "@/types/relationships";
 

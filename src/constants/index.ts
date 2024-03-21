@@ -1,3 +1,6 @@
+import { NotificationModalData } from "@/types/notifications";
+import { PetModalData } from "@/types/pets";
+
 export const sidebarLinks = [
   {
     imgURL: "/assets/home-plaza.png",
@@ -106,3 +109,31 @@ export const weekDaysAbbr = [
   "Fri",
   "Sat",
 ];
+
+export const initialNotificationModalData: NotificationModalData = {
+  name: "",
+  type: "",
+  quantity: 0,
+  unit: "",
+  dosageQuantity: 0,
+  frequencyQuantity: 0,
+  date: "",
+  day: [],
+  time: [],
+  endDate: "",
+  repeating: [],
+  notes: "",
+  files: "",
+  imageSrc: "",
+  userId: "",
+  petId: "clttnp58f0001693x54lumj70",
+};
+
+export const initialPetModalData: PetModalData = {
+  firstName: "",
+  lastName: "",
+  type: "",
+  breed: "",
+  birthday: "",
+  gotchaDate: "",
+};

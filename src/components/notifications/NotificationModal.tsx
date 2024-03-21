@@ -1,6 +1,11 @@
 "use client";
 
-import { daysOfTheWeek, FrequencyUnit, RepeatingType } from "@/constants";
+import {
+  daysOfTheWeek,
+  FrequencyUnit,
+  initialNotificationModalData,
+  RepeatingType,
+} from "@/constants";
 import Image from "next/image";
 import { MouseEvent, useState, useEffect } from "react";
 import Modal from "../shared/modal";
@@ -11,28 +16,11 @@ import {
   NotificationModalProps,
 } from "@/types/notifications";
 
-export const initialNotificationModalData: NotificationModalData = {
-  name: "",
-  type: "",
-  quantity: 0,
-  unit: "",
-  dosageQuantity: 0,
-  frequencyQuantity: 0,
-  day: [],
-  time: [],
-  endDate: [],
-  repeating: [],
-  notes: "",
-  files: "",
-  imageSrc: "",
-  userId: "",
-  petId: "clttnp58f0001693x54lumj70",
-};
-
-const AddNotification: React.FC<NotificationModalProps> = ({
+const NotificationModal: React.FC<NotificationModalProps> = ({
   isOpen,
   onClose,
   activeUser,
+  notificationProp,
 }) => {
   const [page, setPage] = useState(0);
   const [notification, setNotification] = useState<NotificationModalData>(
@@ -46,6 +34,12 @@ const AddNotification: React.FC<NotificationModalProps> = ({
       userId: activeUser?.id,
     }));
   }, [activeUser]);
+
+  useEffect(() => {
+    if (notificationProp) {
+      setNotification(notificationProp);
+    }
+  }, [notificationProp]);
 
   let numbers: number[] = Array.from(
     { length: notification.frequencyQuantity || 1 },
@@ -97,19 +91,43 @@ const AddNotification: React.FC<NotificationModalProps> = ({
 
   async function sendData() {
     const notificationData = JSON.stringify(notification);
-    console.log(notification);
     try {
-      const response = await fetch("http://localhost:3001/notifications", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: notificationData,
-      });
-      console.log(await response.json());
-    } catch (err) {
-      console.error(err);
+      if (notificationProp && notificationProp.id) {
+        const res = await fetch(
+          `http://localhost:3001/notifications/${notificationProp.id}`,
+          {
+            method: "PUT",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: notificationData,
+          }
+        );
+        if (res.ok) {
+          console.log(await res.json());
+        } else
+          throw new Error(
+            `Error response with upserting notification ID ${notificationProp.id}. Status: ${res.status} ${res.statusText}`
+          );
+      } else {
+        const res = await fetch(`http://localhost:3001/notifications/`, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: notificationData,
+        });
+        if (res.ok) {
+          console.log(await res.json());
+        } else
+          throw new Error(
+            `Error response with creating notification. Status: ${res.status} ${res.statusText}`
+          );
+      }
+    } catch (err: any) {
+      console.log(`Error request with notification. Error: ${err.message}`);
     }
   }
 
@@ -443,94 +461,120 @@ const AddNotification: React.FC<NotificationModalProps> = ({
           (page === 1 && notification.type === "Food")) && (
           <section className="section">
             <h2 className="heading2">Notification Schedule</h2>
-            <div className="flex justify-center gap-4">
-              <div className="flex flex-col w-full">
-                {numbers.map((num: number, index: number) => (
-                  <div key={index}>
-                    <label htmlFor="time">{`Time for dosage ${num}:`}</label>
+            <div className="flex justify-center">
+              <div className="flex flex-col w-full gap-4">
+                <div className="flex flex-row gap-4">
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="date">{`Date:`}</label>
                     <input
-                      type="time"
-                      id="time"
-                      name="time"
+                      type="date"
+                      id="date"
+                      name="date"
                       className="border"
-                      defaultValue={notification.time[index]}
+                      placeholder="MM/DD/YY"
+                      pattern="^(0[1-9]|1[0-2])\/0[1-3]|1[0-9])\/([0-9]{2})$"
+                      defaultValue={notification.date}
                       onChange={(e) => {
-                        const updatedTime = [...notification.time];
-                        updatedTime[index] = e.target.value;
                         setNotification({
                           ...notification,
-                          time: updatedTime,
+                          date: e.target.value,
                         });
                       }}
                     ></input>
-
-                    <div className="flex flex-col">
-                      <label htmlFor="isRepeating">Repeating?</label>
-                      <select
-                        name="isRepeating"
-                        id="isRepeating"
-                        className="border"
-                        defaultValue={notification.repeating[index]}
-                        onChange={(e) => {
-                          const updatedRepeating = [...notification.repeating];
-                          updatedRepeating[index] = e.target.value;
-                          setNotification({
-                            ...notification,
-                            repeating: updatedRepeating,
-                          });
-                        }}
-                      >
-                        {RepeatingType.map((repeating, index) => (
-                          <option key={index} value={repeating}>
-                            {repeating}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex flex-col">
-                      <label htmlFor="day">Day:</label>
-                      <select
-                        name="day"
-                        id="day"
-                        className="border"
-                        defaultValue={notification.day[index]}
-                        onChange={(e) => {
-                          const updatedDay = [...notification.day];
-                          updatedDay[index] = e.target.value;
-                          setNotification({
-                            ...notification,
-                            day: updatedDay,
-                          });
-                        }}
-                      >
-                        {daysOfTheWeek.map((day, index) => (
-                          <option key={index} value={day}>
-                            {day}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex flex-col">
-                      <label htmlFor="end_date">End Date:</label>
-                      <input
-                        type="date"
-                        id="end_date"
-                        name="end_date"
-                        className="border"
-                        placeholder="MM/DD/YY"
-                        pattern="^(0[1-9]|1[0-2])\/0[1-3]|1[0-9])\/([0-9]{2})$"
-                        defaultValue={notification.endDate[index]}
-                        onChange={(e) => {
-                          const updatedEndDate = [...notification.endDate];
-                          updatedEndDate[index] = e.target.value;
-                          setNotification({
-                            ...notification,
-                            endDate: updatedEndDate,
-                          });
-                        }}
-                      ></input>
-                    </div>
                   </div>
+                  <div className="flex flex-col flex-1">
+                    <label htmlFor="end_date">End Date:</label>
+                    <input
+                      type="date"
+                      id="end_date"
+                      name="end_date"
+                      className="border"
+                      placeholder="MM/DD/YY"
+                      pattern="^(0[1-9]|1[0-2])\/0[1-3]|1[0-9])\/([0-9]{2})$"
+                      defaultValue={notification.endDate || notification.date}
+                      onChange={(e) => {
+                        setNotification({
+                          ...notification,
+                          endDate: e.target.value,
+                        });
+                      }}
+                    ></input>
+                  </div>
+                </div>
+
+                {numbers.map((num: number, index: number) => (
+                  <fieldset key={index} className="border p-2">
+                    <legend>{`Dosage ${num}`}</legend>
+                    <div className="flex gap-4 items-center">
+                      <div className="flex flex-col">
+                        <label htmlFor="time">{`Time:`}</label>
+                        <input
+                          type="time"
+                          id="time"
+                          name="time"
+                          className="border"
+                          defaultValue={notification.time[index]}
+                          onChange={(e) => {
+                            const updatedTime = [...notification.time];
+                            updatedTime[index] = e.target.value;
+                            setNotification({
+                              ...notification,
+                              time: updatedTime,
+                            });
+                          }}
+                        ></input>
+                      </div>
+
+                      <div className="flex flex-col">
+                        <label htmlFor="isRepeating">Repeating?</label>
+                        <select
+                          name="isRepeating"
+                          id="isRepeating"
+                          className="border"
+                          defaultValue={notification.repeating[index]}
+                          onChange={(e) => {
+                            const updatedRepeating = [
+                              ...notification.repeating,
+                            ];
+                            updatedRepeating[index] = e.target.value;
+                            setNotification({
+                              ...notification,
+                              repeating: updatedRepeating,
+                            });
+                          }}
+                        >
+                          {RepeatingType.map((repeating, index) => (
+                            <option key={index} value={repeating}>
+                              {repeating}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="flex flex-col">
+                        <label htmlFor="day">Day:</label>
+                        <select
+                          name="day"
+                          id="day"
+                          className="border"
+                          defaultValue={notification.day[index]}
+                          onChange={(e) => {
+                            const updatedDay = [...notification.day];
+                            updatedDay[index] = e.target.value;
+                            setNotification({
+                              ...notification,
+                              day: updatedDay,
+                            });
+                          }}
+                        >
+                          {daysOfTheWeek.map((day, index) => (
+                            <option key={index} value={day}>
+                              {day}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </fieldset>
                 ))}
               </div>
             </div>
@@ -614,4 +658,4 @@ const AddNotification: React.FC<NotificationModalProps> = ({
   );
 };
 
-export default AddNotification;
+export default NotificationModal;

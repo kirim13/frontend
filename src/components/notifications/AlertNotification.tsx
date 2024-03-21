@@ -3,53 +3,51 @@ import {
   AlertNotificationProps,
   NotificationModalData,
 } from "@/types/notifications";
+import { updateNotificationCompleted } from "@/api/notifications";
+import NotificationModal from "./NotificationModal";
 
 const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
-  const [notification, setNotification] = useState<NotificationModalData[]>([]);
+  const [notifications, setNotifications] = useState<NotificationModalData[]>(
+    []
+  );
+  const [isNotificationModalOpen, setNotificationModalOpen] =
+    useState<boolean>(false);
+
+  const handleNotificationModalOpen = () => {
+    setNotificationModalOpen(true);
+  };
+  const handleNotificationModalClose = () => {
+    setNotificationModalOpen(false);
+  };
 
   useEffect(() => {
-    setNotification(props.notifications);
+    setNotifications(props.notifications);
   }, [props.notifications]);
 
-  const handleCheckbox = (i: number) => {
-    if (notification[i]) {
-      let checkbox = document.getElementById(
-        `${notification[i].id} checkbox`
-      ) as HTMLInputElement;
-      if (checkbox.checked) {
-        notification[i].completed = true;
+  const handleCheckbox = async (index: number) => {
+    const updatedNotifications = [...notifications];
+    const notification = updatedNotifications[index];
+
+    if (notification) {
+      notification.completed = !notification.completed;
+      setNotifications(updatedNotifications);
+
+      try {
+        await updateNotificationCompleted(notification.id, {
+          ...notification,
+          completed: notification.completed,
+        });
         console.log(
-          `${props.activeUser?.username} checked ${notification[i].name}`
+          `${props.activeUser?.username} ${
+            notification.completed ? "checked" : "unchecked"
+          } ${notification.name}`
         );
-      } else {
-        notification[i].completed = false;
+      } catch (err: any) {
         console.log(
-          `${props.activeUser?.username} unchecked ${notification[i].name}`
+          `Error updating notification completed with ID ${notification.id} on the server. Error: ${err.message}`
         );
       }
     }
-    setNotification([...notification]);
-    fetch(
-      `http://localhost:3001/notifications/completed/${notification[i].id}`,
-      {
-        method: "PUT",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          completed: notification[i].completed,
-        }),
-      }
-    )
-      .then(async (res) => {
-        if (res.ok) {
-          console.log(await res.json());
-        } else throw new Error("Failed to update notification");
-      })
-      .catch((err) => {
-        console.log(err);
-      });
   };
 
   return (
@@ -60,108 +58,122 @@ const AlertNotification: React.FC<AlertNotificationProps> = (props) => {
           <p>{props.currentDaySelected.toLocaleDateString()}</p>
         </div>
 
-        {notification.map((notif: NotificationModalData, i: number) => (
-          <div key={`${i} ${notif.id}`} className="px-2 h-full">
-            {notif &&
-              notif.createdAt?.toString().slice(0, 10) ===
-                props.currentDaySelected.toISOString().slice(0, 10) &&
-              notif.completed === false &&
-              props.activeTypes[notif.type] &&
-              props.activeNames[notif.petId] &&
-              props.activeTypes[notif.type].checked &&
-              props.activeNames[notif.petId].checked && (
-                <fieldset className="notification-fieldset w-1/2">
+        {notifications.map((notif: NotificationModalData, i: number) => {
+          const shouldRender =
+            notif &&
+            notif.date.toString().slice(0, 10) ===
+              props.currentDaySelected.toISOString().slice(0, 10) &&
+            notif.completed === false &&
+            props.activeTypes[notif.type] &&
+            props.activeNames[notif.petId] &&
+            props.activeTypes[notif.type].checked &&
+            props.activeNames[notif.petId].checked;
+
+          return shouldRender ? (
+            <div key={`${i} ${notif.id}`} className="px-2 h-full">
+              <fieldset className="notification-fieldset w-1/2 flex flex-col">
+                <div className="flex flex-row justify-between items-center">
                   <legend className={`notification-legend-${notif.type}`}>
                     {notif.type}
                   </legend>
+                  <button onClick={handleNotificationModalOpen}>Edit</button>
+                  <NotificationModal
+                    isOpen={isNotificationModalOpen}
+                    onClose={handleNotificationModalClose}
+                    notificationProp={notif}
+                  />
+                </div>
 
-                  <div className="flex flex-row border w-full">
-                    <div className={`notification-label-${notif.type}`}></div>
-                    <div className="px-4 flex-row gap-4 w-5/6">
-                      {`${
-                        notif.type === "Medicine"
-                          ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
-                          : `${notif.quantity} ${notif.unit} of ${notif.name}`
-                      }
+                <div className="flex flex-row border w-full">
+                  <div className={`notification-label-${notif.type}`}></div>
+                  <div className="px-4 flex-row gap-4 w-5/6">
+                    {`${
+                      notif.type === "Medicine"
+                        ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
+                        : `${notif.quantity} ${notif.unit} of ${notif.name}`
+                    }
                       `}
-                      <div className="flex flex-row gap-4">
-                        {notif.time.map((ti, i) => (
-                          <div key={i}>
-                            <div>{ti}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="flex items-center w-1/6 justify-center border">
-                      <label htmlFor={`${notif.id} checkbox`}>
-                        <input
-                          type="checkbox"
-                          id={`${notif.id} checkbox`}
-                          name={`${notif.id} checkbox`}
-                          onClick={() => handleCheckbox(i)}
-                          defaultChecked={notif.completed}
-                        />
-                      </label>
+                    <div className="flex flex-row gap-4">
+                      {notif.time.map((ti, i) => (
+                        <div key={`${i} ${ti}`}>
+                          <div>{ti}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </fieldset>
-              )}
-          </div>
-        ))}
+                  <div className="flex items-center w-1/6 justify-center border">
+                    <label htmlFor={`${notif.id} checkbox`}>
+                      <input
+                        type="checkbox"
+                        id={`${notif.id} checkbox`}
+                        name={`${notif.id} checkbox`}
+                        onChange={() => handleCheckbox(i)}
+                        defaultChecked={notif.completed}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          ) : null;
+        })}
 
         <div className="flex flex-row border items-center h-full">
           <div className="title">Completed Notifications</div>
         </div>
-        {notification.map((notif: NotificationModalData, i: number) => (
-          <div key={`${i} ${notif.id}`}>
-            {notif &&
-              notif.completed === true &&
-              props.activeTypes[notif.type] &&
-              props.activeNames[notif.petId] &&
-              props.activeTypes[notif.type].checked &&
-              props.activeNames[notif.petId].checked &&
-              notif.createdAt?.toString().slice(0, 10) ===
-                props.currentDaySelected.toISOString().slice(0, 10) && (
-                <fieldset className="notification-fieldset w-1/2">
-                  <legend className={`notification-legend-${notif.type}`}>
-                    {notif.type}
-                  </legend>
+        {notifications.map((notif: NotificationModalData, i: number) => {
+          let shouldRenderCompleted =
+            notif &&
+            notif.completed === true &&
+            notif.date.toString().slice(0, 10) ===
+              props.currentDaySelected.toISOString().slice(0, 10) &&
+            props.activeTypes[notif.type] &&
+            props.activeNames[notif.petId] &&
+            props.activeTypes[notif.type].checked &&
+            props.activeNames[notif.petId].checked;
 
-                  <div className="flex flex-row border w-full">
-                    <div className={`notification-label-${notif.type}`}></div>
-                    <div className="px-4 flex-row gap-4 w-5/6">
-                      {`${
-                        notif.type === "Medicine"
-                          ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
-                          : `${notif.quantity} ${notif.unit} of ${notif.name}`
-                      }`}
-                      <div className="flex flex-row gap-4">
-                        {notif.time.map((ti, i) => (
-                          <div key={i}>
-                            <div>{ti}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="w-1/6 flex items-center justify-center border">
-                      <label
-                        htmlFor={`${notif.id} checkbox`}
-                        className="flex justify-end border"
-                      >
-                        <input
-                          type="checkbox"
-                          id={`${notif.id} checkbox`}
-                          name={`${notif.id} checkbox`}
-                          onClick={() => handleCheckbox(i)}
-                          defaultChecked={notification[i].completed}
-                        />
-                      </label>
+          return shouldRenderCompleted ? (
+            <div key={`${i} ${notif.id}`}>
+              <fieldset className="notification-fieldset w-1/2">
+                <legend className={`notification-legend-${notif.type}`}>
+                  {notif.type}
+                </legend>
+
+                <div className="flex flex-row border w-full">
+                  <div className={`notification-label-${notif.type}`}></div>
+                  <div className="px-4 flex-row gap-4 w-5/6">
+                    {`${
+                      notif.type === "Medicine"
+                        ? `${notif.quantity} ${notif.unit} of ${notif.dosageQuantity} ${notif.dosageUnit} ${notif.name}`
+                        : `${notif.quantity} ${notif.unit} of ${notif.name}`
+                    }`}
+                    <div className="flex flex-row gap-4">
+                      {notif.time.map((ti, i) => (
+                        <div key={`${i} ${ti}`}>
+                          <div>{ti}</div>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </fieldset>
-              )}
-          </div>
-        ))}
+                  <div className="w-1/6 flex items-center justify-center border">
+                    <label
+                      htmlFor={`${notif.id} checkbox`}
+                      className="flex justify-end border"
+                    >
+                      <input
+                        type="checkbox"
+                        id={`${notif.id} checkbox`}
+                        name={`${notif.id} checkbox`}
+                        onChange={() => handleCheckbox(i)}
+                        defaultChecked={notifications[i].completed}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+            </div>
+          ) : null;
+        })}
       </div>
     </div>
   );

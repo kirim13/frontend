@@ -161,6 +161,45 @@ const Calendar: React.FC<CalendarProps> = ({ user }) => {
     }));
   };
 
+  const handleEndDate = (notif: any) => {
+    const date1: any = new Date(notif.endDate);
+    const date2: any = new Date(notif.date);
+    const diffDays = Math.ceil(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
+    const days = [];
+
+    for (let i = 0; i <= diffDays; i++) {
+      const currentDate = new Date(date2);
+      currentDate.setDate(currentDate.getDate() + i);
+      days.push(currentDate);
+      // Make a new post request for the notification each day until the end date
+      // Unsure why it an infinite loop -- so temporarily have it commented out
+      /*
+      try {
+        const res = await fetch("http://localhost:3001/notifications/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: await JSON.stringify({
+            ...notif,  
+            date: currentDate.toISOString().slice(0, 10),
+          }),
+        });
+
+        if (res.ok) {
+          console.log(await res.json());
+        } else {
+          throw new Error(`Response error. Status: ${res.statusText}`);
+        }
+      } catch (err: any) {
+        console.log(`Error with request. Error: ${err.message}`);
+      }
+      */
+    }
+    // console.log("Number of fetch requests made:", days.length);
+    return days;
+  };
+
   return (
     <div className="w-full h-full border flex flex-row">
       <div className="w-1/2 h-1/2">
@@ -220,35 +259,46 @@ const Calendar: React.FC<CalendarProps> = ({ user }) => {
                   </p>
                   <div className="absolute top-0 right-0 flex flex-col gap-y-0.5 mt-0.5 mr-0.5">
                     {notification.map(
-                      (notif: NotificationModalData, index: number) =>
-                        notif.createdAt?.toString().slice(0, 10) ===
-                          dayNum.toISOString().slice(0, 10) &&
-                        activeTypes[notif.type] &&
-                        activeNames[notif.petId] && (
+                      (notif: NotificationModalData, index: number) => {
+                        const endDate = handleEndDate(notif);
+                        return (
                           <div key={index}>
-                            <div
-                              className={`${
-                                notif.type === "Medicine" &&
-                                activeTypes[notif.type].checked &&
-                                activeNames[notif.petId].checked
-                                  ? "border p-1 bg-orange-300 rounded-full"
-                                  : null
-                              } ${
-                                notif.type === "Food" &&
-                                activeTypes[notif.type].checked &&
-                                activeNames[notif.petId].checked
-                                  ? "border p-1 bg-violet-300 rounded-full"
-                                  : null
-                              } ${
-                                notif.type === "Water" &&
-                                activeTypes[notif.type].checked &&
-                                activeNames[notif.petId].checked
-                                  ? "border p-1 bg-sky-300 rounded-full"
-                                  : null
-                              }`}
-                            />
+                            {endDate.map((day: any, index: number) => {
+                              const shouldRender =
+                                day.toISOString().slice(0, 10) ===
+                                  dayNum.toISOString().slice(0, 10) &&
+                                activeTypes[notif.type]?.checked &&
+                                activeNames[notif.petId]?.checked;
+
+                              return shouldRender ? (
+                                <div key={day}>
+                                  <div
+                                    className={`${
+                                      notif.type === "Medicine" &&
+                                      activeTypes[notif.type].checked &&
+                                      activeNames[notif.petId].checked
+                                        ? "border p-1 bg-orange-300 rounded-full"
+                                        : null
+                                    } ${
+                                      notif.type === "Food" &&
+                                      activeTypes[notif.type].checked &&
+                                      activeNames[notif.petId].checked
+                                        ? "border p-1 bg-violet-300 rounded-full"
+                                        : null
+                                    } ${
+                                      notif.type === "Water" &&
+                                      activeTypes[notif.type].checked &&
+                                      activeNames[notif.petId].checked
+                                        ? "border p-1 bg-sky-300 rounded-full"
+                                        : null
+                                    }`}
+                                  />
+                                </div>
+                              ) : null;
+                            })}
                           </div>
-                        )
+                        );
+                      }
                     )}
                   </div>
                 </div>
